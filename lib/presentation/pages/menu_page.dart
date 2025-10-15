@@ -355,67 +355,125 @@ class _MenuPageViewState extends State<_MenuPageView> {
   Widget _buildCategoryChips(BuildContext context, MenuLoaded state) {
     final parentCategories = state.parentCategories;
 
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        children: [
-          // "All" category
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: state.selectedParentCategoryId == null && state.selectedCategoryId == null
-                ? ElevatedButton(
-                    onPressed: () {
-                      context.read<MenuBloc>().add(SelectCategory(null));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    child: const Text('All'),
-                  )
-                : OutlinedButton(
-                    onPressed: () {
-                      context.read<MenuBloc>().add(SelectCategory(null));
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    child: const Text('All'),
-                  ),
-          ),
-          // Category buttons
-          ...parentCategories.map((category) {
+    return BlocBuilder<CartBloc, CartState>(
+      builder: (context, cartState) {
+        // Calculate cart items per category
+        int getCategoryCartCount(int categoryId) {
+          final categoryProductIds = state.allProducts
+              .where((p) => p.cateId == categoryId)
+              .map((p) => p.productId)
+              .toSet();
+          return cartState.items
+              .where((item) => categoryProductIds.contains(item.product.productId))
+              .fold(0, (sum, item) => sum + item.quantity);
+        }
 
-            final isSelected = state.isParentCategorySelected(category.id);
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: isSelected
-                  ? ElevatedButton(
-                      onPressed: () {
-                        context.read<MenuBloc>().add(SelectCategory(category.id));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
+        return Container(
+          height: 56,
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            children: [
+              // "All" category
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: state.selectedParentCategoryId == null && state.selectedCategoryId == null
+                    ? ElevatedButton(
+                        onPressed: () {
+                          context.read<MenuBloc>().add(SelectCategory(null));
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).colorScheme.primary,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('All'),
+                      )
+                    : OutlinedButton(
+                        onPressed: () {
+                          context.read<MenuBloc>().add(SelectCategory(null));
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.primary,
+                        ),
+                        child: const Text('All'),
                       ),
-                      child: Text(category.catNameEn),
-                    )
-                  : OutlinedButton(
-                      onPressed: () {
-                        context.read<MenuBloc>().add(SelectCategory(category.id));
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Theme.of(context).colorScheme.primary,
-                      ),
-                      child: Text(category.catNameEn),
-                    ),
-            );
-          }),
-        ],
-      ),
+              ),
+              // Category buttons
+              ...parentCategories.map((category) {
+                final isSelected = state.isParentCategorySelected(category.id);
+                final cartCount = getCategoryCartCount(category.id);
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: isSelected
+                      ? ElevatedButton(
+                          onPressed: () {
+                            context.read<MenuBloc>().add(SelectCategory(category.id));
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(category.catNameEn),
+                              if (cartCount > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    cartCount.toString(),
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        )
+                      : OutlinedButton(
+                          onPressed: () {
+                            context.read<MenuBloc>().add(SelectCategory(category.id));
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.primary,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(category.catNameEn),
+                              if (cartCount > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    cartCount.toString(),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -528,7 +586,14 @@ class _MenuPageViewState extends State<_MenuPageView> {
         ? menuState.productAttributes
         : <int, List<ProductAttribute>>{};
 
-    return Card(
+    return BlocBuilder<CartBloc, CartState>(
+      builder: (context, cartState) {
+        // Calculate total quantity of this product in cart
+        final quantityInCart = cartState.items
+            .where((item) => item.product.productId == product.productId)
+            .fold(0, (sum, item) => sum + item.quantity);
+
+        return Card(
       elevation: 2.0,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
@@ -558,18 +623,67 @@ class _MenuPageViewState extends State<_MenuPageView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product image
+            // Product image with cart quantity badge
             AspectRatio(
               aspectRatio: 1.0,
-              child: product.secureProductPic != null
-                  ? WebSafeImage(
-                      imageUrl: product.secureProductPic!,
-                      fit: BoxFit.cover,
-                    )
-                  : Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.restaurant, size: 48),
+              child: Stack(
+                children: [
+                  // Product image
+                  product.secureProductPic != null
+                      ? WebSafeImage(
+                          imageUrl: product.secureProductPic!,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        )
+                      : Container(
+                          color: Colors.grey[200],
+                          child: const Icon(Icons.restaurant, size: 48),
+                        ),
+                  // Cart quantity badge
+                  if (quantityInCart > 0)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.shopping_cart,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              quantityInCart.toString(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
+                ],
+              ),
             ),
             // Product details section
             Padding(
@@ -666,6 +780,8 @@ class _MenuPageViewState extends State<_MenuPageView> {
           ],
         ),
       ),
+    );
+      },
     );
   }
 
