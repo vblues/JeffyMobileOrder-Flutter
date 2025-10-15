@@ -5,7 +5,7 @@ import 'app.dart';
 // Version info - update this when bumping version in pubspec.yaml
 // Current: pubspec.yaml line 19
 const kAppVersion = '1.0.0';
-const kBuildNumber = '41'; // Build 41: Add combo product modifiers and radio button deselection
+const kBuildNumber = '42'; // Build 42: Fix modifier button showing when no modifiers available
 
 void main() {
   // Remove the # from URLs for clean routing

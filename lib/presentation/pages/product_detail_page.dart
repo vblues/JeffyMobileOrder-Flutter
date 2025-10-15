@@ -1219,10 +1219,10 @@ class _ComboSelectionSheetState extends State<_ComboSelectionSheet> {
                   final isSelected = currentSelections.any(
                     (item) => item.productId == product.productId,
                   );
-                  // Check if product has modifiers using the hasModifiers flag from product
+                  // Check if product has actual modifiers available
                   final productAttributes = widget.productAttributesMap[product.productId] ?? [];
-                  // Show modifier button if product has the hasModifiers flag set OR if attributes are available
-                  final hasModifiers = product.hasModifiers == 1 || productAttributes.isNotEmpty;
+                  // Only show modifier button if there are actual attributes available
+                  final hasModifiers = productAttributes.isNotEmpty;
 
                   // Get the current selection for this product (if selected)
                   SelectedComboItem? currentSelection;
