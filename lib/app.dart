@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/store_locator_page.dart';
 import 'presentation/pages/menu_page.dart';
+import 'presentation/pages/cart_page.dart';
 
 class MobileOrderApp extends StatelessWidget {
   const MobileOrderApp({super.key});
@@ -41,6 +42,10 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/menu',
       builder: (context, state) => const MenuPage(),
+    ),
+    GoRoute(
+      path: '/cart',
+      builder: (context, state) => const CartPage(),
     ),
     // TODO: Add table service route in Phase 2
     // GoRoute(

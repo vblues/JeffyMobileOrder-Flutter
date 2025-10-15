@@ -208,6 +208,30 @@ class Product {
     return productPic;
   }
 
+  /// Convert to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'status': status,
+      'cid': cid,
+      'cate_id': cateId,
+      'product_pic': productPic,
+      'product_id': productId,
+      'product_name': productName,
+      'note': note,
+      'product_sn': productSn,
+      'is_take_out': isTakeOut,
+      'price': price,
+      'sort_sn': sortSn,
+      'start_time': startTime,
+      'end_time': endTime,
+      'ingredient_name': ingredientName,
+      'ingredients_id': ingredientsId,
+      'effective_start_time': effectiveStartTime,
+      'effective_end_time': effectiveEndTime,
+      'hasModifiers': hasModifiers,
+    };
+  }
+
   @override
   String toString() {
     return 'Product(id: $productId, name: $productNameEn, price: $formattedPrice)';

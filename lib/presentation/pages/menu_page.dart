@@ -10,9 +10,13 @@ import '../../data/models/product_model.dart';
 import '../../data/models/product_attribute_model.dart';
 import '../../data/models/store_credentials_model.dart';
 import '../../data/repositories/menu_repository_impl.dart';
+import '../../data/repositories/cart_repository_impl.dart';
 import '../bloc/menu_bloc.dart';
 import '../bloc/menu_event.dart';
 import '../bloc/menu_state.dart';
+import '../bloc/cart_bloc.dart';
+import '../bloc/cart_event.dart';
+import '../bloc/cart_state.dart';
 import '../widgets/web_safe_image.dart';
 import 'product_detail_page.dart';
 
@@ -92,15 +96,24 @@ class MenuPage extends StatelessWidget {
         final storeName = _extractStoreName(storeInfoData);
         final brandColor = _extractBrandColor(storeInfoData);
 
-        return BlocProvider(
-          create: (context) => MenuBloc(
-            menuRepository: MenuRepository(
-              remoteDataSource: MenuRemoteDataSource(),
-              sharedPreferences: snapshot.data!,
+        return MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => MenuBloc(
+                menuRepository: MenuRepository(
+                  remoteDataSource: MenuRemoteDataSource(),
+                  sharedPreferences: snapshot.data!,
+                ),
+                credentials: credentials,
+                storeId: storeId,
+              )..add(LoadMenu()),
             ),
-            credentials: credentials,
-            storeId: storeId,
-          )..add(LoadMenu()),
+            BlocProvider(
+              create: (context) => CartBloc(
+                CartRepository(snapshot.data!),
+              )..add(LoadCart()),
+            ),
+          ],
           child: _MenuPageView(
             storeName: storeName,
             brandColor: brandColor,
@@ -181,6 +194,7 @@ class _MenuPageViewState extends State<_MenuPageView> {
             : Text(widget.storeName),
         backgroundColor: _parseColor(widget.brandColor),
         actions: [
+          // Search button
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
             onPressed: () {
@@ -193,6 +207,59 @@ class _MenuPageViewState extends State<_MenuPageView> {
               });
             },
           ),
+          // Cart button with badge
+          BlocBuilder<CartBloc, CartState>(
+            builder: (context, cartState) {
+              final itemCount = cartState.totalItemCount;
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart),
+                    onPressed: () {
+                      context.push('/cart');
+                    },
+                  ),
+                  // Badge showing item count
+                  if (itemCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: IgnorePointer(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 1,
+                            ),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            itemCount > 9 ? '9+' : itemCount.toString(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              height: 1.2,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: BlocBuilder<MenuBloc, MenuState>(
@@ -469,15 +536,21 @@ class _MenuPageViewState extends State<_MenuPageView> {
       ),
       child: InkWell(
         onTap: () {
+          // Get CartBloc from parent context
+          final cartBloc = context.read<CartBloc>();
+
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProductDetailPage(
-                product: product,
-                attributes: attributes,
-                comboCategories: comboCategories,
-                comboProductsMap: comboProductsMap,
-                productAttributesMap: productAttributesMap,
+              builder: (context) => BlocProvider.value(
+                value: cartBloc,
+                child: ProductDetailPage(
+                  product: product,
+                  attributes: attributes,
+                  comboCategories: comboCategories,
+                  comboProductsMap: comboProductsMap,
+                  productAttributesMap: productAttributesMap,
+                ),
               ),
             ),
           );
@@ -551,15 +624,21 @@ class _MenuPageViewState extends State<_MenuPageView> {
                     height: 32,
                     child: ElevatedButton(
                       onPressed: () {
+                        // Get CartBloc from parent context
+                        final cartBloc = context.read<CartBloc>();
+
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProductDetailPage(
-                              product: product,
-                              attributes: attributes,
-                              comboCategories: comboCategories,
-                              comboProductsMap: comboProductsMap,
-                              productAttributesMap: productAttributesMap,
+                            builder: (context) => BlocProvider.value(
+                              value: cartBloc,
+                              child: ProductDetailPage(
+                                product: product,
+                                attributes: attributes,
+                                comboCategories: comboCategories,
+                                comboProductsMap: comboProductsMap,
+                                productAttributesMap: productAttributesMap,
+                              ),
                             ),
                           ),
                         );

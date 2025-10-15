@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/product_model.dart';
 import '../../data/models/product_attribute_model.dart';
 import '../../data/models/combo_model.dart';
+import '../bloc/cart_bloc.dart';
+import '../bloc/cart_event.dart';
+import '../bloc/cart_state.dart';
 import '../widgets/web_safe_image.dart';
 
 class ProductDetailPage extends StatefulWidget {
@@ -310,21 +314,36 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       child: ElevatedButton(
                         onPressed: _areAllMandatoryModifiersSelected()
                             ? () {
-                                // TODO: Add to cart functionality
+                                // Add to cart
+                                context.read<CartBloc>().add(
+                                      AddToCart(
+                                        product: widget.product,
+                                        quantity: _quantity,
+                                        selectedModifiers: _selectedModifiers,
+                                        selectedCombos: _selectedCombos,
+                                      ),
+                                    );
+
+                                // Show success message
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
                                       'Added $_quantity x ${widget.product.productNameEn} to cart',
                                     ),
                                     duration: const Duration(seconds: 2),
+                                    backgroundColor: Colors.green,
                                     action: SnackBarAction(
                                       label: 'View Cart',
+                                      textColor: Colors.white,
                                       onPressed: () {
-                                        // TODO: Navigate to cart
+                                        context.pop();
+                                        context.push('/cart');
                                       },
                                     ),
                                   ),
                                 );
+
+                                // Navigate back to menu
                                 context.pop();
                               }
                             : null,
