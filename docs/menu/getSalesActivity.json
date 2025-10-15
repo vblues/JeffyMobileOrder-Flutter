@@ -1,0 +1,1878 @@
+{
+    "result_code": 200,
+    "data": [
+        {
+            "activity_combo_id": 12,
+            "activity_sn": "2003",
+            "activity_name": "{\"cn\":\"Staff 20% discount\",\"en\":\"Staff 20% discount\"}",
+            "activity_pic": "images/2021-05-12-17-08-14_609b9afe23d26.png",
+            "discount_sn": "2146435093",
+            "discount_type": 2,
+            "discount_num": "20.00",
+            "start_time": 1620748800,
+            "end_time": 2147443200,
+            "act_cycle_daytime": "[{\"week\": 1, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 2, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 3, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 4, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 5, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 6, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 7, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}]",
+            "cdata": [
+                {
+                    "type_name": "{\"cn\":\"Main\",\"en\":\"Main\"}",
+                    "is_choice": 0,
+                    "sort": 0,
+                    "product_id": [
+                        {
+                            "product_id": 334,
+                            "product_type": 1,
+                            "sort": 0
+                        },
+                        {
+                            "product_id": 335,
+                            "product_type": 1,
+                            "sort": 1
+                        },
+                        {
+                            "product_id": 336,
+                            "product_type": 1,
+                            "sort": 2
+                        },
+                        {
+                            "product_id": 337,
+                            "product_type": 1,
+                            "sort": 3
+                        },
+                        {
+                            "product_id": 338,
+                            "product_type": 1,
+                            "sort": 4
+                        },
+                        {
+                            "product_id": 339,
+                            "product_type": 1,
+                            "sort": 5
+                        },
+                        {
+                            "product_id": 340,
+                            "product_type": 1,
+                            "sort": 6
+                        },
+                        {
+                            "product_id": 341,
+                            "product_type": 1,
+                            "sort": 7
+                        },
+                        {
+                            "product_id": 342,
+                            "product_type": 1,
+                            "sort": 8
+                        },
+                        {
+                            "product_id": 344,
+                            "product_type": 1,
+                            "sort": 9
+                        },
+                        {
+                            "product_id": 345,
+                            "product_type": 1,
+                            "sort": 10
+                        },
+                        {
+                            "product_id": 333,
+                            "product_type": 1,
+                            "sort": 11
+                        },
+                        {
+                            "product_id": 412,
+                            "product_type": 1,
+                            "sort": 12
+                        },
+                        {
+                            "product_id": 413,
+                            "product_type": 1,
+                            "sort": 13
+                        },
+                        {
+                            "product_id": 414,
+                            "product_type": 1,
+                            "sort": 14
+                        },
+                        {
+                            "product_id": 415,
+                            "product_type": 1,
+                            "sort": 15
+                        },
+                        {
+                            "product_id": 416,
+                            "product_type": 1,
+                            "sort": 16
+                        },
+                        {
+                            "product_id": 417,
+                            "product_type": 1,
+                            "sort": 17
+                        },
+                        {
+                            "product_id": 419,
+                            "product_type": 1,
+                            "sort": 18
+                        },
+                        {
+                            "product_id": 420,
+                            "product_type": 1,
+                            "sort": 19
+                        },
+                        {
+                            "product_id": 421,
+                            "product_type": 1,
+                            "sort": 20
+                        },
+                        {
+                            "product_id": 422,
+                            "product_type": 1,
+                            "sort": 21
+                        },
+                        {
+                            "product_id": 423,
+                            "product_type": 1,
+                            "sort": 22
+                        },
+                        {
+                            "product_id": 411,
+                            "product_type": 1,
+                            "sort": 23
+                        },
+                        {
+                            "product_id": 376,
+                            "product_type": 1,
+                            "sort": 24
+                        },
+                        {
+                            "product_id": 377,
+                            "product_type": 1,
+                            "sort": 25
+                        },
+                        {
+                            "product_id": 378,
+                            "product_type": 1,
+                            "sort": 26
+                        },
+                        {
+                            "product_id": 379,
+                            "product_type": 1,
+                            "sort": 27
+                        },
+                        {
+                            "product_id": 380,
+                            "product_type": 1,
+                            "sort": 28
+                        },
+                        {
+                            "product_id": 385,
+                            "product_type": 1,
+                            "sort": 29
+                        },
+                        {
+                            "product_id": 386,
+                            "product_type": 1,
+                            "sort": 30
+                        },
+                        {
+                            "product_id": 426,
+                            "product_type": 1,
+                            "sort": 31
+                        },
+                        {
+                            "product_id": 392,
+                            "product_type": 1,
+                            "sort": 32
+                        },
+                        {
+                            "product_id": 393,
+                            "product_type": 1,
+                            "sort": 33
+                        },
+                        {
+                            "product_id": 394,
+                            "product_type": 1,
+                            "sort": 34
+                        },
+                        {
+                            "product_id": 395,
+                            "product_type": 1,
+                            "sort": 35
+                        },
+                        {
+                            "product_id": 396,
+                            "product_type": 1,
+                            "sort": 36
+                        },
+                        {
+                            "product_id": 397,
+                            "product_type": 1,
+                            "sort": 37
+                        },
+                        {
+                            "product_id": 398,
+                            "product_type": 1,
+                            "sort": 38
+                        },
+                        {
+                            "product_id": 399,
+                            "product_type": 1,
+                            "sort": 39
+                        },
+                        {
+                            "product_id": 400,
+                            "product_type": 1,
+                            "sort": 40
+                        },
+                        {
+                            "product_id": 401,
+                            "product_type": 1,
+                            "sort": 41
+                        },
+                        {
+                            "product_id": 468,
+                            "product_type": 1,
+                            "sort": 42
+                        },
+                        {
+                            "product_id": 469,
+                            "product_type": 1,
+                            "sort": 43
+                        },
+                        {
+                            "product_id": 470,
+                            "product_type": 1,
+                            "sort": 44
+                        },
+                        {
+                            "product_id": 471,
+                            "product_type": 1,
+                            "sort": 45
+                        },
+                        {
+                            "product_id": 472,
+                            "product_type": 1,
+                            "sort": 46
+                        },
+                        {
+                            "product_id": 473,
+                            "product_type": 1,
+                            "sort": 47
+                        },
+                        {
+                            "product_id": 474,
+                            "product_type": 1,
+                            "sort": 48
+                        },
+                        {
+                            "product_id": 475,
+                            "product_type": 1,
+                            "sort": 49
+                        },
+                        {
+                            "product_id": 476,
+                            "product_type": 1,
+                            "sort": 50
+                        },
+                        {
+                            "product_id": 477,
+                            "product_type": 1,
+                            "sort": 51
+                        },
+                        {
+                            "product_id": 478,
+                            "product_type": 1,
+                            "sort": 52
+                        },
+                        {
+                            "product_id": 479,
+                            "product_type": 1,
+                            "sort": 53
+                        },
+                        {
+                            "product_id": 460,
+                            "product_type": 1,
+                            "sort": 54
+                        },
+                        {
+                            "product_id": 461,
+                            "product_type": 1,
+                            "sort": 55
+                        },
+                        {
+                            "product_id": 462,
+                            "product_type": 1,
+                            "sort": 56
+                        },
+                        {
+                            "product_id": 463,
+                            "product_type": 1,
+                            "sort": 57
+                        },
+                        {
+                            "product_id": 464,
+                            "product_type": 1,
+                            "sort": 58
+                        },
+                        {
+                            "product_id": 465,
+                            "product_type": 1,
+                            "sort": 59
+                        },
+                        {
+                            "product_id": 466,
+                            "product_type": 1,
+                            "sort": 60
+                        },
+                        {
+                            "product_id": 467,
+                            "product_type": 1,
+                            "sort": 61
+                        },
+                        {
+                            "product_id": 343,
+                            "product_type": 1,
+                            "sort": 62
+                        },
+                        {
+                            "product_id": 418,
+                            "product_type": 1,
+                            "sort": 63
+                        },
+                        {
+                            "product_id": 732,
+                            "product_type": 1,
+                            "sort": 64
+                        },
+                        {
+                            "product_id": 741,
+                            "product_type": 1,
+                            "sort": 65
+                        },
+                        {
+                            "product_id": 309,
+                            "product_type": 1,
+                            "sort": 66
+                        },
+                        {
+                            "product_id": 310,
+                            "product_type": 1,
+                            "sort": 67
+                        },
+                        {
+                            "product_id": 311,
+                            "product_type": 1,
+                            "sort": 68
+                        },
+                        {
+                            "product_id": 312,
+                            "product_type": 1,
+                            "sort": 69
+                        },
+                        {
+                            "product_id": 313,
+                            "product_type": 1,
+                            "sort": 70
+                        },
+                        {
+                            "product_id": 630,
+                            "product_type": 1,
+                            "sort": 71
+                        },
+                        {
+                            "product_id": 631,
+                            "product_type": 1,
+                            "sort": 72
+                        },
+                        {
+                            "product_id": 632,
+                            "product_type": 1,
+                            "sort": 73
+                        },
+                        {
+                            "product_id": 346,
+                            "product_type": 1,
+                            "sort": 74
+                        },
+                        {
+                            "product_id": 387,
+                            "product_type": 1,
+                            "sort": 75
+                        },
+                        {
+                            "product_id": 388,
+                            "product_type": 1,
+                            "sort": 76
+                        },
+                        {
+                            "product_id": 389,
+                            "product_type": 1,
+                            "sort": 77
+                        },
+                        {
+                            "product_id": 390,
+                            "product_type": 1,
+                            "sort": 78
+                        },
+                        {
+                            "product_id": 391,
+                            "product_type": 1,
+                            "sort": 79
+                        },
+                        {
+                            "product_id": 403,
+                            "product_type": 1,
+                            "sort": 80
+                        },
+                        {
+                            "product_id": 404,
+                            "product_type": 1,
+                            "sort": 81
+                        },
+                        {
+                            "product_id": 405,
+                            "product_type": 1,
+                            "sort": 82
+                        },
+                        {
+                            "product_id": 406,
+                            "product_type": 1,
+                            "sort": 83
+                        },
+                        {
+                            "product_id": 407,
+                            "product_type": 1,
+                            "sort": 84
+                        },
+                        {
+                            "product_id": 408,
+                            "product_type": 1,
+                            "sort": 85
+                        },
+                        {
+                            "product_id": 409,
+                            "product_type": 1,
+                            "sort": 86
+                        },
+                        {
+                            "product_id": 410,
+                            "product_type": 1,
+                            "sort": 87
+                        },
+                        {
+                            "product_id": 481,
+                            "product_type": 1,
+                            "sort": 88
+                        },
+                        {
+                            "product_id": 483,
+                            "product_type": 1,
+                            "sort": 89
+                        },
+                        {
+                            "product_id": 402,
+                            "product_type": 1,
+                            "sort": 90
+                        },
+                        {
+                            "product_id": 480,
+                            "product_type": 1,
+                            "sort": 91
+                        },
+                        {
+                            "product_id": 589,
+                            "product_type": 1,
+                            "sort": 92
+                        },
+                        {
+                            "product_id": 590,
+                            "product_type": 1,
+                            "sort": 93
+                        },
+                        {
+                            "product_id": 591,
+                            "product_type": 1,
+                            "sort": 94
+                        },
+                        {
+                            "product_id": 592,
+                            "product_type": 1,
+                            "sort": 95
+                        },
+                        {
+                            "product_id": 593,
+                            "product_type": 1,
+                            "sort": 96
+                        },
+                        {
+                            "product_id": 594,
+                            "product_type": 1,
+                            "sort": 97
+                        },
+                        {
+                            "product_id": 595,
+                            "product_type": 1,
+                            "sort": 98
+                        },
+                        {
+                            "product_id": 596,
+                            "product_type": 1,
+                            "sort": 99
+                        },
+                        {
+                            "product_id": 597,
+                            "product_type": 1,
+                            "sort": 100
+                        },
+                        {
+                            "product_id": 598,
+                            "product_type": 1,
+                            "sort": 101
+                        },
+                        {
+                            "product_id": 599,
+                            "product_type": 1,
+                            "sort": 102
+                        },
+                        {
+                            "product_id": 699,
+                            "product_type": 1,
+                            "sort": 103
+                        },
+                        {
+                            "product_id": 366,
+                            "product_type": 1,
+                            "sort": 104
+                        },
+                        {
+                            "product_id": 367,
+                            "product_type": 1,
+                            "sort": 105
+                        },
+                        {
+                            "product_id": 368,
+                            "product_type": 1,
+                            "sort": 106
+                        },
+                        {
+                            "product_id": 369,
+                            "product_type": 1,
+                            "sort": 107
+                        },
+                        {
+                            "product_id": 370,
+                            "product_type": 1,
+                            "sort": 108
+                        },
+                        {
+                            "product_id": 371,
+                            "product_type": 1,
+                            "sort": 109
+                        },
+                        {
+                            "product_id": 372,
+                            "product_type": 1,
+                            "sort": 110
+                        },
+                        {
+                            "product_id": 373,
+                            "product_type": 1,
+                            "sort": 111
+                        },
+                        {
+                            "product_id": 374,
+                            "product_type": 1,
+                            "sort": 112
+                        },
+                        {
+                            "product_id": 375,
+                            "product_type": 1,
+                            "sort": 113
+                        },
+                        {
+                            "product_id": 357,
+                            "product_type": 1,
+                            "sort": 114
+                        },
+                        {
+                            "product_id": 358,
+                            "product_type": 1,
+                            "sort": 115
+                        },
+                        {
+                            "product_id": 359,
+                            "product_type": 1,
+                            "sort": 116
+                        },
+                        {
+                            "product_id": 360,
+                            "product_type": 1,
+                            "sort": 117
+                        },
+                        {
+                            "product_id": 361,
+                            "product_type": 1,
+                            "sort": 118
+                        },
+                        {
+                            "product_id": 362,
+                            "product_type": 1,
+                            "sort": 119
+                        },
+                        {
+                            "product_id": 363,
+                            "product_type": 1,
+                            "sort": 120
+                        },
+                        {
+                            "product_id": 364,
+                            "product_type": 1,
+                            "sort": 121
+                        },
+                        {
+                            "product_id": 365,
+                            "product_type": 1,
+                            "sort": 122
+                        },
+                        {
+                            "product_id": 314,
+                            "product_type": 1,
+                            "sort": 123
+                        },
+                        {
+                            "product_id": 315,
+                            "product_type": 1,
+                            "sort": 124
+                        },
+                        {
+                            "product_id": 316,
+                            "product_type": 1,
+                            "sort": 125
+                        },
+                        {
+                            "product_id": 317,
+                            "product_type": 1,
+                            "sort": 126
+                        },
+                        {
+                            "product_id": 318,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 319,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 320,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 321,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 322,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 323,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 438,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 439,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 444,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 326,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 328,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 534,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1646,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1647,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1648,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1649,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1634,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1635,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1636,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1637,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1638,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1639,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1640,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1641,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1642,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1643,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1644,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1645,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1650,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1651,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1652,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1653,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1654,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1655,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1656,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 1657,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 2028,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 2030,
+                            "product_type": 1,
+                            "sort": 127
+                        },
+                        {
+                            "product_id": 2075,
+                            "product_type": 1,
+                            "sort": 127
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "activity_combo_id": 7,
+            "activity_sn": "2146435305",
+            "activity_name": "{\"cn\":\"Combo\",\"en\":\"Combo\"}",
+            "activity_pic": "images/2021-03-09-11-55-05_6046ffa9ea558.jpg",
+            "discount_sn": "001",
+            "discount_type": 1,
+            "discount_num": "0.00",
+            "start_time": 1615219200,
+            "end_time": 2147443200,
+            "act_cycle_daytime": "[{\"week\": 1, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 2, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 3, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 4, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 5, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 6, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 7, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}]",
+            "cdata": [
+                {
+                    "type_name": "{\"cn\":\"Main\",\"en\":\"Main\"}",
+                    "is_choice": 0,
+                    "sort": 0,
+                    "product_id": [
+                        {
+                            "product_id": 312,
+                            "product_type": 1,
+                            "sort": 0
+                        },
+                        {
+                            "product_id": 313,
+                            "product_type": 1,
+                            "sort": 1
+                        },
+                        {
+                            "product_id": 314,
+                            "product_type": 1,
+                            "sort": 2
+                        },
+                        {
+                            "product_id": 315,
+                            "product_type": 1,
+                            "sort": 3
+                        },
+                        {
+                            "product_id": 316,
+                            "product_type": 1,
+                            "sort": 4
+                        },
+                        {
+                            "product_id": 317,
+                            "product_type": 1,
+                            "sort": 5
+                        },
+                        {
+                            "product_id": 318,
+                            "product_type": 1,
+                            "sort": 6
+                        },
+                        {
+                            "product_id": 319,
+                            "product_type": 1,
+                            "sort": 7
+                        },
+                        {
+                            "product_id": 320,
+                            "product_type": 1,
+                            "sort": 8
+                        },
+                        {
+                            "product_id": 321,
+                            "product_type": 1,
+                            "sort": 9
+                        },
+                        {
+                            "product_id": 322,
+                            "product_type": 1,
+                            "sort": 10
+                        },
+                        {
+                            "product_id": 323,
+                            "product_type": 1,
+                            "sort": 11
+                        },
+                        {
+                            "product_id": 309,
+                            "product_type": 1,
+                            "sort": 12
+                        },
+                        {
+                            "product_id": 310,
+                            "product_type": 1,
+                            "sort": 13
+                        },
+                        {
+                            "product_id": 311,
+                            "product_type": 1,
+                            "sort": 14
+                        },
+                        {
+                            "product_id": 324,
+                            "product_type": 1,
+                            "sort": 15
+                        },
+                        {
+                            "product_id": 325,
+                            "product_type": 1,
+                            "sort": 16
+                        },
+                        {
+                            "product_id": 326,
+                            "product_type": 1,
+                            "sort": 17
+                        },
+                        {
+                            "product_id": 327,
+                            "product_type": 1,
+                            "sort": 18
+                        },
+                        {
+                            "product_id": 328,
+                            "product_type": 1,
+                            "sort": 19
+                        },
+                        {
+                            "product_id": 329,
+                            "product_type": 1,
+                            "sort": 20
+                        },
+                        {
+                            "product_id": 330,
+                            "product_type": 1,
+                            "sort": 21
+                        },
+                        {
+                            "product_id": 331,
+                            "product_type": 1,
+                            "sort": 22
+                        },
+                        {
+                            "product_id": 332,
+                            "product_type": 1,
+                            "sort": 23
+                        },
+                        {
+                            "product_id": 402,
+                            "product_type": 1,
+                            "sort": 24
+                        },
+                        {
+                            "product_id": 403,
+                            "product_type": 1,
+                            "sort": 25
+                        },
+                        {
+                            "product_id": 404,
+                            "product_type": 1,
+                            "sort": 26
+                        },
+                        {
+                            "product_id": 405,
+                            "product_type": 1,
+                            "sort": 27
+                        },
+                        {
+                            "product_id": 406,
+                            "product_type": 1,
+                            "sort": 28
+                        },
+                        {
+                            "product_id": 407,
+                            "product_type": 1,
+                            "sort": 29
+                        },
+                        {
+                            "product_id": 408,
+                            "product_type": 1,
+                            "sort": 30
+                        },
+                        {
+                            "product_id": 409,
+                            "product_type": 1,
+                            "sort": 31
+                        },
+                        {
+                            "product_id": 410,
+                            "product_type": 1,
+                            "sort": 32
+                        },
+                        {
+                            "product_id": 347,
+                            "product_type": 1,
+                            "sort": 33
+                        },
+                        {
+                            "product_id": 348,
+                            "product_type": 1,
+                            "sort": 34
+                        },
+                        {
+                            "product_id": 349,
+                            "product_type": 1,
+                            "sort": 35
+                        },
+                        {
+                            "product_id": 350,
+                            "product_type": 1,
+                            "sort": 36
+                        },
+                        {
+                            "product_id": 351,
+                            "product_type": 1,
+                            "sort": 37
+                        },
+                        {
+                            "product_id": 352,
+                            "product_type": 1,
+                            "sort": 38
+                        },
+                        {
+                            "product_id": 353,
+                            "product_type": 1,
+                            "sort": 39
+                        },
+                        {
+                            "product_id": 354,
+                            "product_type": 1,
+                            "sort": 40
+                        },
+                        {
+                            "product_id": 355,
+                            "product_type": 1,
+                            "sort": 41
+                        },
+                        {
+                            "product_id": 356,
+                            "product_type": 1,
+                            "sort": 42
+                        },
+                        {
+                            "product_id": 425,
+                            "product_type": 1,
+                            "sort": 43
+                        },
+                        {
+                            "product_id": 471,
+                            "product_type": 1,
+                            "sort": 44
+                        },
+                        {
+                            "product_id": 472,
+                            "product_type": 1,
+                            "sort": 45
+                        },
+                        {
+                            "product_id": 473,
+                            "product_type": 1,
+                            "sort": 46
+                        },
+                        {
+                            "product_id": 474,
+                            "product_type": 1,
+                            "sort": 47
+                        },
+                        {
+                            "product_id": 475,
+                            "product_type": 1,
+                            "sort": 48
+                        },
+                        {
+                            "product_id": 476,
+                            "product_type": 1,
+                            "sort": 49
+                        },
+                        {
+                            "product_id": 477,
+                            "product_type": 1,
+                            "sort": 50
+                        },
+                        {
+                            "product_id": 478,
+                            "product_type": 1,
+                            "sort": 51
+                        },
+                        {
+                            "product_id": 479,
+                            "product_type": 1,
+                            "sort": 52
+                        },
+                        {
+                            "product_id": 481,
+                            "product_type": 1,
+                            "sort": 53
+                        },
+                        {
+                            "product_id": 483,
+                            "product_type": 1,
+                            "sort": 54
+                        },
+                        {
+                            "product_id": 460,
+                            "product_type": 1,
+                            "sort": 55
+                        },
+                        {
+                            "product_id": 461,
+                            "product_type": 1,
+                            "sort": 56
+                        },
+                        {
+                            "product_id": 462,
+                            "product_type": 1,
+                            "sort": 57
+                        },
+                        {
+                            "product_id": 463,
+                            "product_type": 1,
+                            "sort": 58
+                        },
+                        {
+                            "product_id": 464,
+                            "product_type": 1,
+                            "sort": 59
+                        },
+                        {
+                            "product_id": 465,
+                            "product_type": 1,
+                            "sort": 60
+                        },
+                        {
+                            "product_id": 466,
+                            "product_type": 1,
+                            "sort": 61
+                        },
+                        {
+                            "product_id": 467,
+                            "product_type": 1,
+                            "sort": 62
+                        },
+                        {
+                            "product_id": 468,
+                            "product_type": 1,
+                            "sort": 63
+                        },
+                        {
+                            "product_id": 469,
+                            "product_type": 1,
+                            "sort": 64
+                        },
+                        {
+                            "product_id": 470,
+                            "product_type": 1,
+                            "sort": 65
+                        },
+                        {
+                            "product_id": 480,
+                            "product_type": 1,
+                            "sort": 66
+                        },
+                        {
+                            "product_id": 589,
+                            "product_type": 1,
+                            "sort": 67
+                        },
+                        {
+                            "product_id": 590,
+                            "product_type": 1,
+                            "sort": 68
+                        },
+                        {
+                            "product_id": 591,
+                            "product_type": 1,
+                            "sort": 69
+                        },
+                        {
+                            "product_id": 592,
+                            "product_type": 1,
+                            "sort": 70
+                        },
+                        {
+                            "product_id": 593,
+                            "product_type": 1,
+                            "sort": 71
+                        },
+                        {
+                            "product_id": 594,
+                            "product_type": 1,
+                            "sort": 72
+                        },
+                        {
+                            "product_id": 595,
+                            "product_type": 1,
+                            "sort": 73
+                        },
+                        {
+                            "product_id": 596,
+                            "product_type": 1,
+                            "sort": 74
+                        },
+                        {
+                            "product_id": 597,
+                            "product_type": 1,
+                            "sort": 75
+                        },
+                        {
+                            "product_id": 598,
+                            "product_type": 1,
+                            "sort": 76
+                        },
+                        {
+                            "product_id": 599,
+                            "product_type": 1,
+                            "sort": 77
+                        }
+                    ]
+                },
+                {
+                    "type_name": "{\"cn\":\"Drinks\",\"en\":\"Drinks\"}",
+                    "is_choice": 0,
+                    "sort": 0,
+                    "product_id": [
+                        {
+                            "product_id": 424,
+                            "product_type": 1,
+                            "sort": 78
+                        },
+                        {
+                            "product_id": 2075,
+                            "product_type": 1,
+                            "sort": 79
+                        },
+                        {
+                            "product_id": 1636,
+                            "product_type": 1,
+                            "sort": 80
+                        },
+                        {
+                            "product_id": 1634,
+                            "product_type": 1,
+                            "sort": 81
+                        },
+                        {
+                            "product_id": 1635,
+                            "product_type": 1,
+                            "sort": 82
+                        },
+                        {
+                            "product_id": 1641,
+                            "product_type": 1,
+                            "sort": 83
+                        },
+                        {
+                            "product_id": 1639,
+                            "product_type": 1,
+                            "sort": 84
+                        },
+                        {
+                            "product_id": 1640,
+                            "product_type": 1,
+                            "sort": 85
+                        },
+                        {
+                            "product_id": 1642,
+                            "product_type": 1,
+                            "sort": 86
+                        },
+                        {
+                            "product_id": 1643,
+                            "product_type": 1,
+                            "sort": 87
+                        },
+                        {
+                            "product_id": 1637,
+                            "product_type": 1,
+                            "sort": 88
+                        },
+                        {
+                            "product_id": 1638,
+                            "product_type": 1,
+                            "sort": 89
+                        },
+                        {
+                            "product_id": 1653,
+                            "product_type": 1,
+                            "sort": 90
+                        },
+                        {
+                            "product_id": 1655,
+                            "product_type": 1,
+                            "sort": 91
+                        },
+                        {
+                            "product_id": 400,
+                            "product_type": 1,
+                            "sort": 92
+                        },
+                        {
+                            "product_id": 1646,
+                            "product_type": 1,
+                            "sort": 93
+                        },
+                        {
+                            "product_id": 1644,
+                            "product_type": 1,
+                            "sort": 94
+                        },
+                        {
+                            "product_id": 1645,
+                            "product_type": 1,
+                            "sort": 95
+                        },
+                        {
+                            "product_id": 1650,
+                            "product_type": 1,
+                            "sort": 96
+                        },
+                        {
+                            "product_id": 1648,
+                            "product_type": 1,
+                            "sort": 97
+                        },
+                        {
+                            "product_id": 1649,
+                            "product_type": 1,
+                            "sort": 98
+                        },
+                        {
+                            "product_id": 1651,
+                            "product_type": 1,
+                            "sort": 99
+                        },
+                        {
+                            "product_id": 1652,
+                            "product_type": 1,
+                            "sort": 100
+                        },
+                        {
+                            "product_id": 1647,
+                            "product_type": 1,
+                            "sort": 101
+                        },
+                        {
+                            "product_id": 1654,
+                            "product_type": 1,
+                            "sort": 102
+                        },
+                        {
+                            "product_id": 391,
+                            "product_type": 1,
+                            "sort": 103
+                        },
+                        {
+                            "product_id": 392,
+                            "product_type": 1,
+                            "sort": 104
+                        },
+                        {
+                            "product_id": 393,
+                            "product_type": 1,
+                            "sort": 105
+                        },
+                        {
+                            "product_id": 394,
+                            "product_type": 1,
+                            "sort": 106
+                        },
+                        {
+                            "product_id": 1656,
+                            "product_type": 1,
+                            "sort": 107
+                        },
+                        {
+                            "product_id": 1657,
+                            "product_type": 1,
+                            "sort": 108
+                        },
+                        {
+                            "product_id": 2028,
+                            "product_type": 1,
+                            "sort": 109
+                        },
+                        {
+                            "product_id": 2030,
+                            "product_type": 1,
+                            "sort": 110
+                        },
+                        {
+                            "product_id": 401,
+                            "product_type": 1,
+                            "sort": 111
+                        },
+                        {
+                            "product_id": 1039,
+                            "product_type": 1,
+                            "sort": 112
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "activity_combo_id": 8,
+            "activity_sn": "2146435306",
+            "activity_name": "{\"cn\":\"Set\",\"en\":\"Set\"}",
+            "activity_pic": "images/2021-03-09-12-00-30_604700ee16a5e.jpg",
+            "discount_sn": "{\"required\":\"step2\"}",
+            "discount_type": 1,
+            "discount_num": "0.00",
+            "start_time": 1615219200,
+            "end_time": 2147443200,
+            "act_cycle_daytime": "[{\"week\": 1, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 2, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 3, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 4, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 5, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 6, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}, {\"week\": 7, \"check\": 1, \"end_time\": \"23:59:59\", \"start_time\": \"00:00:00\"}]",
+            "cdata": [
+                {
+                    "type_name": "{\"cn\":\"Main\",\"en\":\"Main\"}",
+                    "is_choice": 0,
+                    "sort": 0,
+                    "product_id": [
+                        {
+                            "product_id": 412,
+                            "product_type": 1,
+                            "sort": 0
+                        },
+                        {
+                            "product_id": 413,
+                            "product_type": 1,
+                            "sort": 1
+                        },
+                        {
+                            "product_id": 414,
+                            "product_type": 1,
+                            "sort": 2
+                        },
+                        {
+                            "product_id": 415,
+                            "product_type": 1,
+                            "sort": 3
+                        },
+                        {
+                            "product_id": 416,
+                            "product_type": 1,
+                            "sort": 4
+                        },
+                        {
+                            "product_id": 417,
+                            "product_type": 1,
+                            "sort": 5
+                        },
+                        {
+                            "product_id": 419,
+                            "product_type": 1,
+                            "sort": 6
+                        },
+                        {
+                            "product_id": 420,
+                            "product_type": 1,
+                            "sort": 7
+                        },
+                        {
+                            "product_id": 421,
+                            "product_type": 1,
+                            "sort": 8
+                        },
+                        {
+                            "product_id": 422,
+                            "product_type": 1,
+                            "sort": 9
+                        },
+                        {
+                            "product_id": 423,
+                            "product_type": 1,
+                            "sort": 10
+                        },
+                        {
+                            "product_id": 411,
+                            "product_type": 1,
+                            "sort": 11
+                        },
+                        {
+                            "product_id": 418,
+                            "product_type": 1,
+                            "sort": 12
+                        },
+                        {
+                            "product_id": 741,
+                            "product_type": 1,
+                            "sort": 13
+                        },
+                        {
+                            "product_id": 3205,
+                            "product_type": 1,
+                            "sort": 14
+                        }
+                    ]
+                },
+                {
+                    "type_name": "{\"cn\":\"Drinks1|1|1\",\"en\":\"Drinks1|1|1\"}",
+                    "is_choice": 0,
+                    "sort": 0,
+                    "product_id": [
+                        {
+                            "product_id": 369,
+                            "product_type": 1,
+                            "sort": 15
+                        },
+                        {
+                            "product_id": 367,
+                            "product_type": 1,
+                            "sort": 16
+                        },
+                        {
+                            "product_id": 368,
+                            "product_type": 1,
+                            "sort": 17
+                        },
+                        {
+                            "product_id": 373,
+                            "product_type": 1,
+                            "sort": 18
+                        },
+                        {
+                            "product_id": 371,
+                            "product_type": 1,
+                            "sort": 19
+                        },
+                        {
+                            "product_id": 372,
+                            "product_type": 1,
+                            "sort": 20
+                        },
+                        {
+                            "product_id": 374,
+                            "product_type": 1,
+                            "sort": 21
+                        },
+                        {
+                            "product_id": 375,
+                            "product_type": 1,
+                            "sort": 22
+                        },
+                        {
+                            "product_id": 370,
+                            "product_type": 1,
+                            "sort": 23
+                        },
+                        {
+                            "product_id": 388,
+                            "product_type": 1,
+                            "sort": 24
+                        },
+                        {
+                            "product_id": 390,
+                            "product_type": 1,
+                            "sort": 25
+                        },
+                        {
+                            "product_id": 1646,
+                            "product_type": 1,
+                            "sort": 26
+                        },
+                        {
+                            "product_id": 1644,
+                            "product_type": 1,
+                            "sort": 27
+                        },
+                        {
+                            "product_id": 1645,
+                            "product_type": 1,
+                            "sort": 28
+                        },
+                        {
+                            "product_id": 1648,
+                            "product_type": 1,
+                            "sort": 29
+                        },
+                        {
+                            "product_id": 1649,
+                            "product_type": 1,
+                            "sort": 30
+                        },
+                        {
+                            "product_id": 1647,
+                            "product_type": 1,
+                            "sort": 31
+                        },
+                        {
+                            "product_id": 391,
+                            "product_type": 1,
+                            "sort": 32
+                        },
+                        {
+                            "product_id": 396,
+                            "product_type": 1,
+                            "sort": 33
+                        },
+                        {
+                            "product_id": 398,
+                            "product_type": 1,
+                            "sort": 34
+                        },
+                        {
+                            "product_id": 613,
+                            "product_type": 1,
+                            "sort": 35
+                        },
+                        {
+                            "product_id": 610,
+                            "product_type": 1,
+                            "sort": 36
+                        },
+                        {
+                            "product_id": 346,
+                            "product_type": 1,
+                            "sort": 37
+                        },
+                        {
+                            "product_id": 399,
+                            "product_type": 1,
+                            "sort": 38
+                        },
+                        {
+                            "product_id": 359,
+                            "product_type": 1,
+                            "sort": 39
+                        },
+                        {
+                            "product_id": 357,
+                            "product_type": 1,
+                            "sort": 40
+                        },
+                        {
+                            "product_id": 358,
+                            "product_type": 1,
+                            "sort": 41
+                        },
+                        {
+                            "product_id": 364,
+                            "product_type": 1,
+                            "sort": 42
+                        },
+                        {
+                            "product_id": 362,
+                            "product_type": 1,
+                            "sort": 43
+                        },
+                        {
+                            "product_id": 363,
+                            "product_type": 1,
+                            "sort": 44
+                        },
+                        {
+                            "product_id": 365,
+                            "product_type": 1,
+                            "sort": 45
+                        },
+                        {
+                            "product_id": 366,
+                            "product_type": 1,
+                            "sort": 46
+                        },
+                        {
+                            "product_id": 360,
+                            "product_type": 1,
+                            "sort": 47
+                        },
+                        {
+                            "product_id": 361,
+                            "product_type": 1,
+                            "sort": 48
+                        },
+                        {
+                            "product_id": 2075,
+                            "product_type": 1,
+                            "sort": 49
+                        },
+                        {
+                            "product_id": 1634,
+                            "product_type": 1,
+                            "sort": 50
+                        },
+                        {
+                            "product_id": 1635,
+                            "product_type": 1,
+                            "sort": 51
+                        },
+                        {
+                            "product_id": 1636,
+                            "product_type": 1,
+                            "sort": 52
+                        },
+                        {
+                            "product_id": 1639,
+                            "product_type": 1,
+                            "sort": 53
+                        },
+                        {
+                            "product_id": 1640,
+                            "product_type": 1,
+                            "sort": 54
+                        },
+                        {
+                            "product_id": 1641,
+                            "product_type": 1,
+                            "sort": 55
+                        },
+                        {
+                            "product_id": 1642,
+                            "product_type": 1,
+                            "sort": 56
+                        },
+                        {
+                            "product_id": 1643,
+                            "product_type": 1,
+                            "sort": 57
+                        },
+                        {
+                            "product_id": 1637,
+                            "product_type": 1,
+                            "sort": 58
+                        },
+                        {
+                            "product_id": 1638,
+                            "product_type": 1,
+                            "sort": 59
+                        },
+                        {
+                            "product_id": 395,
+                            "product_type": 1,
+                            "sort": 60
+                        },
+                        {
+                            "product_id": 387,
+                            "product_type": 1,
+                            "sort": 61
+                        },
+                        {
+                            "product_id": 389,
+                            "product_type": 1,
+                            "sort": 62
+                        },
+                        {
+                            "product_id": 397,
+                            "product_type": 1,
+                            "sort": 63
+                        },
+                        {
+                            "product_id": 1650,
+                            "product_type": 1,
+                            "sort": 64
+                        },
+                        {
+                            "product_id": 1651,
+                            "product_type": 1,
+                            "sort": 65
+                        },
+                        {
+                            "product_id": 1652,
+                            "product_type": 1,
+                            "sort": 66
+                        },
+                        {
+                            "product_id": 1653,
+                            "product_type": 1,
+                            "sort": 67
+                        },
+                        {
+                            "product_id": 1655,
+                            "product_type": 1,
+                            "sort": 68
+                        },
+                        {
+                            "product_id": 2028,
+                            "product_type": 1,
+                            "sort": 69
+                        },
+                        {
+                            "product_id": 1654,
+                            "product_type": 1,
+                            "sort": 70
+                        },
+                        {
+                            "product_id": 1656,
+                            "product_type": 1,
+                            "sort": 71
+                        },
+                        {
+                            "product_id": 1657,
+                            "product_type": 1,
+                            "sort": 72
+                        },
+                        {
+                            "product_id": 400,
+                            "product_type": 1,
+                            "sort": 73
+                        },
+                        {
+                            "product_id": 2030,
+                            "product_type": 1,
+                            "sort": 74
+                        },
+                        {
+                            "product_id": 393,
+                            "product_type": 1,
+                            "sort": 75
+                        },
+                        {
+                            "product_id": 392,
+                            "product_type": 1,
+                            "sort": 76
+                        },
+                        {
+                            "product_id": 394,
+                            "product_type": 1,
+                            "sort": 77
+                        },
+                        {
+                            "product_id": 401,
+                            "product_type": 1,
+                            "sort": 78
+                        },
+                        {
+                            "product_id": 1039,
+                            "product_type": 1,
+                            "sort": 79
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "desc": "success"
+}

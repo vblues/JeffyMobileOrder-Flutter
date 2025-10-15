@@ -1,0 +1,140 @@
+{
+    "result_code": 200,
+    "menu": [
+        {
+            "id": 105,
+            "parent_id": 0,
+            "cat_name": "{\"cn\":\"Toast Value Meal\",\"en\":\"Toast Value Meal\"}",
+            "category_sn": "0004",
+            "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-03-10-11-07-33_60484605f3f02.jpg",
+            "cat_pic1": "http://oss.jeffy.sg/toastho/",
+            "sort_sn": 9,
+            "child": [
+                {
+                    "id": 106,
+                    "parent_id": 105,
+                    "cat_name": "{\"cn\":\"Crispy Toast Set\",\"en\":\"Crispy Toast Set\"}",
+                    "category_sn": "0004001",
+                    "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-03-10-11-08-05_604846254463f.jpg",
+                    "cat_pic1": "http://oss.jeffy.sg/toastho/",
+                    "sort_sn": 1,
+                    "child": []
+                },
+                {
+                    "id": 107,
+                    "parent_id": 105,
+                    "cat_name": "{\"cn\":\"Soft Bun Set\",\"en\":\"Soft Bun Set\"}",
+                    "category_sn": "0004002",
+                    "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-03-10-11-08-26_6048463a670cc.jpg",
+                    "cat_pic1": "http://oss.jeffy.sg/toastho/",
+                    "sort_sn": 2,
+                    "child": []
+                }
+            ]
+        },
+        {
+            "id": 101,
+            "parent_id": 0,
+            "cat_name": "{\"cn\":\"Toast Ala Carte\",\"en\":\"Toast Ala Carte\"}",
+            "category_sn": "0003",
+            "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-03-10-11-05-40_60484594c5736.jpg",
+            "cat_pic1": "http://oss.jeffy.sg/toastho/",
+            "sort_sn": 10,
+            "child": [
+                {
+                    "id": 102,
+                    "parent_id": 101,
+                    "cat_name": "{\"cn\":\"Crispy Toast\",\"en\":\"Crispy Toast\"}",
+                    "category_sn": "0003001",
+                    "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-03-10-11-06-04_604845ac3524d.jpg",
+                    "cat_pic1": "http://oss.jeffy.sg/toastho/",
+                    "sort_sn": 1,
+                    "child": []
+                },
+                {
+                    "id": 103,
+                    "parent_id": 101,
+                    "cat_name": "{\"cn\":\"Soft Bun\",\"en\":\"Soft Bun\"}",
+                    "category_sn": "0003002",
+                    "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-03-10-11-06-33_604845c9b1fad.jpg",
+                    "cat_pic1": "http://oss.jeffy.sg/toastho/",
+                    "sort_sn": 2,
+                    "child": []
+                }
+            ]
+        },
+        {
+            "id": 112,
+            "parent_id": 0,
+            "cat_name": "{\"cn\":\"Local Delights\",\"en\":\"Local Delights\"}",
+            "category_sn": "0008",
+            "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-03-10-11-17-42_60484866cc6f3.jpg",
+            "cat_pic1": "http://oss.jeffy.sg/toastho/",
+            "sort_sn": 11,
+            "child": []
+        },
+        {
+            "id": 99,
+            "parent_id": 0,
+            "cat_name": "{\"cn\":\"Asian Favourites\",\"en\":\"Asian Favourites\"}",
+            "category_sn": "0001",
+            "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-03-10-11-04-18_60484542eed2f.jpg",
+            "cat_pic1": "http://oss.jeffy.sg/toastho/",
+            "sort_sn": 12,
+            "child": []
+        },
+        {
+            "id": 231,
+            "parent_id": 0,
+            "cat_name": "{\"cn\":\"Thai Beverages\",\"en\":\"Thai Beverages\"}",
+            "category_sn": "88000",
+            "cat_pic": "http://oss.jeffy.sg/toastho/images/2023-08-28-18-17-47_64ec744b773e1.jpg",
+            "cat_pic1": "http://oss.jeffy.sg/toastho/",
+            "sort_sn": 17,
+            "child": [
+                {
+                    "id": 253,
+                    "parent_id": 231,
+                    "cat_name": "{\"cn\":\"Cold Thai Beverages\",\"en\":\"Cold Thai Beverages\"}",
+                    "category_sn": "880001",
+                    "cat_pic": "http://oss.jeffy.sg/toastho/images/2023-08-30-10-41-32_64eeac5c2b594.jpg",
+                    "cat_pic1": "http://oss.jeffy.sg/toastho/",
+                    "sort_sn": 1,
+                    "child": []
+                }
+            ]
+        },
+        {
+            "id": 259,
+            "parent_id": 0,
+            "cat_name": "{\"cn\":\"Local Beverages\",\"en\":\"Local Beverages\"}",
+            "category_sn": "88001",
+            "cat_pic": "http://oss.jeffy.sg/toastho/images/2024-02-07-11-43-37_65c2fc697782b.jpg",
+            "cat_pic1": "http://oss.jeffy.sg/toastho/",
+            "sort_sn": 18,
+            "child": [
+                {
+                    "id": 110,
+                    "parent_id": 259,
+                    "cat_name": "{\"cn\":\"Cold Drinks\",\"en\":\"Cold Drinks\"}",
+                    "category_sn": "880011",
+                    "cat_pic": "http://oss.jeffy.sg/toastho/images/2021-06-22-11-45-04_60d15cc05c777.jpg",
+                    "cat_pic1": "http://oss.jeffy.sg/toastho/",
+                    "sort_sn": 1,
+                    "child": []
+                },
+                {
+                    "id": 109,
+                    "parent_id": 259,
+                    "cat_name": "{\"cn\":\"Hot Drinks\",\"en\":\"Hot Drinks\"}",
+                    "category_sn": "880012",
+                    "cat_pic": "http://oss.jeffy.sg/toastho/images/2023-08-30-11-14-58_64eeb43291ef6.jpeg",
+                    "cat_pic1": "http://oss.jeffy.sg/toastho/",
+                    "sort_sn": 2,
+                    "child": []
+                }
+            ]
+        }
+    ],
+    "desc": "success"
+}

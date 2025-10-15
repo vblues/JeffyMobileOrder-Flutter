@@ -1,0 +1,140 @@
+{
+    "result_code": 200,
+    "storeInfos": [
+        {
+            "store_id": 12,
+            "store_sn": "003002",
+            "store_note": "{\n  \"GST\": \"20-0409736-E\",\n  \"GSTPercent\": 9,\n  \"POS\": \"PixelPoint\",\n  \"CRM\": {\n    \"type\": \"Advocado\",\n    \"outletID\": \"\",\n    \"enabled\": false,\n    \"campaigns\": [\n      {\n        \"campaignType\": \"voucher\",\n        \"name\": \"5% Voucher\",\n        \"enabled\": true,\n        \"activitySn\": \"2146435088\"\n      },\n      {\n        \"campaignType\": \"cashback\",\n        \"name\": \"Cashback\",\n        \"enabled\": false,\n        \"image\": \"https://dl.dropboxusercontent.com/s/xagtsisyvm78pdo/cashback.png?dl=0\",\n        \"methodNumber\": 2021,\n        \"allowStaffDiscount\": false\n      },\n      {\n        \"campaignType\": \"stored-value\",\n        \"name\": \"Stored Value\",\n        \"enabled\": true,\n        \"image\": \"https://dl.dropboxusercontent.com/s/gxctqmsvx9wki4s/stored-value.png?dl=0\",\n        \"methodNumber\": 2022,\n        \"autoApplyVoucherOnTopUp\": true,\n        \"allowStaffDiscount\": false\n      },\n      {\n        \"campaignType\": \"prepaid\",\n        \"name\": \"Prepaid Drinks\",\n        \"enabled\": false,\n        \"image\": \"https://dl.dropboxusercontent.com/s/rw5sertbbif54mt/prepaid.png?dl=0\",\n        \"methodNumber\": 2023\n      }\n    ]\n  },\n  \"SalesType\": {\n    \"DineIn\": {\n      \"id\": 1,\n      \"SuccessMsg\": \"Please wait for your pager to be called\",\n      \"FailMsg\": \"Your payment is successful but the store failed to receive the Dine-In order. Please approach the counter for assistance.\"\n    },\n    \"Takeaway\": {\n      \"id\": 2,\n      \"SuccessMsg\": \"Your order has been received. Please monitor your email (including spam folder) for the collection pin.\",\n      \"FailMsg\": \"Your payment is successful but the store failed to receive the Takeaway order. Please approach the counter for assistance.\"\n    },\n    \"PickUp\": {\n      \"id\": 5,\n      \"SuccessMsg\": \"Your order has been received. Please monitor your email (including spam folder) for the collection pin.\",\n      \"FailMsg\": \"Your payment is successful but the store failed to receive the Pick-up order. Please approach the counter for assistance.\"\n    }\n  },\n  \"PayType\": [\n    {\n      \"id\": 60,\n      \"pay_code\": \"2013\"\n    },\n    {\n      \"id\": 23,\n      \"pay_code\": \"999\"\n    }\n  ],\n  \"StaffDiscount\": {\n    \"Enabled\": true,\n    \"EventID\": \"2003\",\n    \"Message1\": \"Check here for SGH staff benefit\",\n    \"Message2\": \"Please prepare your staff pass for verification during order collection.\",\n    \"Message3\": \"20% Staff Discount\",\n    \"StaffDiscountApplyToWholeCheck\": true\n  },\n  \"Pager\": {\n    \"Enabled\": true,\n    \"Message\": \"Please collect the pager located near the cashier area. *** For separate transactions, use a different pager # ***\",\n    \"Image\": \"https://dl.dropboxusercontent.com/s/3qqe5j8k756y5dp/pager_kt.png?dl=0\"\n  },\n  \"Payment\": {\n    \"EFT\": {\n      \"Success\": \"Payment is successful and your order has been accepted. You will be notified via the pager or SMS/Email when your order is ready for collection.\",\n      \"POSFailed\": \"Payment is successful but there is an issue with your order. Please approach our cashier or counter staff and show them this screen. DO NOT NAVIGATE AWAY FROM THIS SCREEN.\",\n      \"PaymentFailed\": \"Payment Declined. Please try again or use our Pay At Counter option.\",\n      \"Timeout\": \"Failed to contact payment gateway. Please try again or use our Pay At Counter option.\"\n    },\n    \"PAC\": {\n      \"Success\": \"Please proceed to the counter for payment. Your order is not confirmed until payment is received.\",\n      \"Failed\": \"Our system is currently unable to accept a PAC order. Please order and pay directly at the counter.\"\n    }\n  },\n  \"LandingPage\": {\n    \"TopBarColorCode\": \"#996600\",\n    \"Footer\": {\n      \"ColorCode\": \"#996600\",\n      \"Text\": \"Powered by Jeffy\"\n    }\n  },\n  \"Images\": {\n    \"LandingPage\": \"https://dl.dropboxusercontent.com/s/j8a3dxy2obgs17h/landingpage.jpg?dl=0\",\n    \"Logo\": \"https://dl.dropboxusercontent.com/s/xe4zoog90afgqyd/logo_kt_02.png?dl=0\",\n    \"EFTPaymentFailed\": \"https://dl.dropboxusercontent.com/s/kc8uwx42623j2m5/RedCross.jpg?dl=0\",\n    \"EFTPaymentSuccess\": \"https://dl.dropboxusercontent.com/s/rbq586ny079v9c7/GreenTick.jpg?dl=0\",\n    \"EFTPaymentSuccessOrderFailed\": \"https://dl.dropboxusercontent.com/s/q18nnkrbt1u99d8/RedExclamationMark.png?dl=0\",\n    \"PACSuccess\": \"https://www.dropbox.com/s/lont2is582mef23/PAC.png?dl=1\",\n    \"PACFailed\": \"https://dl.dropboxusercontent.com/s/kc8uwx42623j2m5/RedCross.jpg?dl=0\",\n    \"SalesType_PickUpAvailable\": \"https://dl.dropboxusercontent.com/s/zbcfx0cxqrodla4/PICK-UP.png?dl=0\",\n    \"SalesType_PickUpNotAvailable\": \"https://dl.dropboxusercontent.com/s/05e3d4a7wsl3qc5/PICK-UP-NA.png?dl=0\",\n    \"SalesType_DineIn\": \"https://dl.dropboxusercontent.com/s/tr0ydko8bgezic3/DINE-IN.png?dl=0\",\n    \"SalesType_TakeAway\": \"https://dl.dropboxusercontent.com/s/ub8fotzjzwr99e8/TAKE-AWAY.png?dl=0\",\n    \"OrderNowButton\": \"https://dl.dropboxusercontent.com/s/8p8bz4jurwlhrcp/OrderNow.png?dl=0\",\n    \"StoreClosed\": \"https://dl.dropboxusercontent.com/s/6eckeosxoyt6o8i/StoreClosed0800-1830-0800-1730.jpg?dl=0\"\n  }\n}",
+            "pay_platform": "23,60",
+            "PosExtShopId": null,
+            "store_name": "{\"cn\":\"Kaffe&Toast, SGH\",\"en\":\"Kaffe&Toast, SGH\"}",
+            "store_addr": "",
+            "street": "SGH",
+            "contact_phone": "62202708",
+            "longitude": "116.394764",
+            "latitude": "39.91725",
+            "holiday_business_time": null,
+            "holiday_close_time": null,
+            "work_business_time": null,
+            "work_close_time": null,
+            "work_time": "{\"real\": [{\"id\": 1, \"time\": [{\"end\": \"19:30:00\", \"start\": \"08:00:00\"}], \"week_name\": \"星期一\"}, {\"id\": 2, \"time\": [{\"end\": \"19:30:00\", \"start\": \"08:00:00\"}], \"week_name\": \"星期二\"}, {\"id\": 3, \"time\": [{\"end\": \"19:30:00\", \"start\": \"08:00:00\"}], \"week_name\": \"星期三\"}, {\"id\": 4, \"time\": [{\"end\": \"19:30:00\", \"start\": \"08:00:00\"}], \"week_name\": \"星期四\"}, {\"id\": 5, \"time\": [{\"end\": \"19:30:00\", \"start\": \"08:00:00\"}], \"week_name\": \"星期五\"}, {\"id\": 6, \"time\": [{\"end\": \"16:30:00\", \"start\": \"08:00:00\"}], \"week_name\": \"星期六\"}, {\"id\": 7, \"time\": [{\"end\": \"16:30:00\", \"start\": \"08:00:00\"}], \"week_name\": \"星期日\"}], \"default\": [{\"end\": \"00:00:00\", \"start\": \"00:00:00\"}]}",
+            "found_time": "2021-04-21",
+            "pos_server_ip": null,
+            "be_info": []
+        }
+    ],
+    "payTypeInfo": [
+        {
+            "id": 15,
+            "pay_name": "NETS",
+            "pay_code": "1010"
+        },
+        {
+            "id": 74,
+            "pay_name": "ShopBack",
+            "pay_code": "2028"
+        },
+        {
+            "id": 73,
+            "pay_name": "Advocado PrePaid",
+            "pay_code": "2023"
+        },
+        {
+            "id": 82,
+            "pay_name": "Foodpanda",
+            "pay_code": "2004"
+        },
+        {
+            "id": 71,
+            "pay_name": "Advocado Cashback",
+            "pay_code": "2021"
+        },
+        {
+            "id": 72,
+            "pay_name": "Advocado Stored Value",
+            "pay_code": "2022"
+        },
+        {
+            "id": 81,
+            "pay_name": "Grab",
+            "pay_code": "2003"
+        },
+        {
+            "id": 60,
+            "pay_name": "Online",
+            "pay_code": "2013"
+        },
+        {
+            "id": 23,
+            "pay_name": "PAC",
+            "pay_code": "999"
+        },
+        {
+            "id": 17,
+            "pay_name": "NETS Debit",
+            "pay_code": "2010"
+        },
+        {
+            "id": 16,
+            "pay_name": "Credit Card",
+            "pay_code": "2009"
+        },
+        {
+            "id": 18,
+            "pay_name": "NETS Flashpay",
+            "pay_code": "2011"
+        },
+        {
+            "id": 19,
+            "pay_name": "NETS QR",
+            "pay_code": "2012"
+        }
+    ],
+    "DeviceInfo": {
+        "device_name": "SGH MO",
+        "ip": null,
+        "extension": null,
+        "store_id": 12,
+        "device_type": null,
+        "out_equipment_id": null,
+        "equip_name": null,
+        "equip_sn": null,
+        "be_sn": null,
+        "be_name": null
+    },
+    "printerList": [],
+    "deviceList": [],
+    "saleTypeInfo": [
+        {
+            "id": 1,
+            "sale_type_name": "EAT-IN",
+            "sale_type_code": "2001"
+        },
+        {
+            "id": 2,
+            "sale_type_name": "TAKE-OUT",
+            "sale_type_code": "2009"
+        },
+        {
+            "id": 5,
+            "sale_type_name": "SELF-TAKE",
+            "sale_type_code": "2003"
+        },
+        {
+            "id": 7,
+            "sale_type_name": "DELIVERY",
+            "sale_type_code": 2009
+        },
+        {
+            "id": 8,
+            "sale_type_name": "Take-Away",
+            "sale_type_code": "2002"
+        },
+        {
+            "id": 9,
+            "sale_type_name": "Dine-IN",
+            "sale_type_code": "2001"
+        }
+    ],
+    "desc": "success"
+}
