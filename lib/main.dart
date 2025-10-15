@@ -5,16 +5,9 @@ import 'app.dart';
 // Version info - update this when bumping version in pubspec.yaml
 // Current: pubspec.yaml line 19
 const kAppVersion = '1.0.0';
-const kBuildNumber = '36'; // Build 36: Fix cache isolation - use store-specific cache keys
+const kBuildNumber = '41'; // Build 41: Add combo product modifiers and radio button deselection
 
 void main() {
-  // Log version information for debugging
-  print('='.padRight(60, '='));
-  print('Mobile Order App Starting');
-  print('Version: $kAppVersion+$kBuildNumber');
-  print('Build: ${DateTime.now().toString()}');
-  print('='.padRight(60, '='));
-
   // Remove the # from URLs for clean routing
   setPathUrlStrategy();
 

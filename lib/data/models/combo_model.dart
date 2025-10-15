@@ -224,7 +224,7 @@ class SelectedComboItem {
   final int productId;
   final String productName;
   final double priceAdjustment;
-  final List<dynamic> modifiers; // Product modifiers if any
+  final List<ComboModifier> modifiers; // Product modifiers if any
 
   SelectedComboItem({
     required this.categoryTypeNameSn,
@@ -235,6 +235,14 @@ class SelectedComboItem {
     this.modifiers = const [],
   });
 
+  /// Get total modifier price for this combo item
+  double get modifierTotal {
+    return modifiers.fold(0.0, (sum, mod) => sum + mod.price);
+  }
+
+  /// Get total price including base price adjustment and modifiers
+  double get totalPrice => priceAdjustment + modifierTotal;
+
   Map<String, dynamic> toJson() {
     return {
       'categoryTypeNameSn': categoryTypeNameSn,
@@ -242,7 +250,7 @@ class SelectedComboItem {
       'productId': productId,
       'productName': productName,
       'priceAdjustment': priceAdjustment,
-      'modifiers': modifiers,
+      'modifiers': modifiers.map((m) => m.toJson()).toList(),
     };
   }
 
@@ -253,7 +261,64 @@ class SelectedComboItem {
       productId: json['productId'] as int? ?? 0,
       productName: json['productName'] as String? ?? '',
       priceAdjustment: (json['priceAdjustment'] as num?)?.toDouble() ?? 0.0,
-      modifiers: json['modifiers'] as List<dynamic>? ?? [],
+      modifiers: (json['modifiers'] as List<dynamic>?)
+          ?.map((m) => ComboModifier.fromJson(m as Map<String, dynamic>))
+          .toList() ?? [],
+    );
+  }
+
+  /// Create a copy with updated modifiers
+  SelectedComboItem copyWith({
+    List<ComboModifier>? modifiers,
+  }) {
+    return SelectedComboItem(
+      categoryTypeNameSn: categoryTypeNameSn,
+      categoryName: categoryName,
+      productId: productId,
+      productName: productName,
+      priceAdjustment: priceAdjustment,
+      modifiers: modifiers ?? this.modifiers,
+    );
+  }
+}
+
+/// Modifier selected for a combo product
+class ComboModifier {
+  final int attId;
+  final String attName;
+  final int attValId;
+  final String attValName;
+  final String attValSn;
+  final double price;
+
+  ComboModifier({
+    required this.attId,
+    required this.attName,
+    required this.attValId,
+    required this.attValName,
+    required this.attValSn,
+    required this.price,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'attId': attId,
+      'attName': attName,
+      'attValId': attValId,
+      'attValName': attValName,
+      'attValSn': attValSn,
+      'price': price,
+    };
+  }
+
+  factory ComboModifier.fromJson(Map<String, dynamic> json) {
+    return ComboModifier(
+      attId: json['attId'] as int,
+      attName: json['attName'] as String,
+      attValId: json['attValId'] as int,
+      attValName: json['attValName'] as String,
+      attValSn: json['attValSn'] as String,
+      price: (json['price'] as num).toDouble(),
     );
   }
 }

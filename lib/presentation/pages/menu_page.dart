@@ -457,6 +457,9 @@ class _MenuPageViewState extends State<_MenuPageView> {
     final comboProductsMap = menuState is MenuLoaded
         ? menuState.comboProductsMap
         : <int, Product>{};
+    final productAttributesMap = menuState is MenuLoaded
+        ? menuState.productAttributes
+        : <int, List<ProductAttribute>>{};
 
     return Card(
       elevation: 2.0,
@@ -474,6 +477,7 @@ class _MenuPageViewState extends State<_MenuPageView> {
                 attributes: attributes,
                 comboCategories: comboCategories,
                 comboProductsMap: comboProductsMap,
+                productAttributesMap: productAttributesMap,
               ),
             ),
           );
@@ -555,6 +559,7 @@ class _MenuPageViewState extends State<_MenuPageView> {
                               attributes: attributes,
                               comboCategories: comboCategories,
                               comboProductsMap: comboProductsMap,
+                              productAttributesMap: productAttributesMap,
                             ),
                           ),
                         );

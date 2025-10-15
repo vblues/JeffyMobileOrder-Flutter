@@ -10,6 +10,7 @@ class ProductDetailPage extends StatefulWidget {
   final List<ProductAttribute> attributes;
   final List<ComboCategory> comboCategories;
   final Map<int, Product> comboProductsMap;
+  final Map<int, List<ProductAttribute>> productAttributesMap;
 
   const ProductDetailPage({
     super.key,
@@ -17,6 +18,7 @@ class ProductDetailPage extends StatefulWidget {
     this.attributes = const [],
     this.comboCategories = const [],
     this.comboProductsMap = const {},
+    this.productAttributesMap = const {},
   });
 
   @override
@@ -95,10 +97,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       }
     }
 
-    // Add combo price adjustments
+    // Add combo price adjustments AND modifier prices
     for (final comboList in _selectedCombos.values) {
       for (final comboItem in comboList) {
-        price += comboItem.priceAdjustment;
+        price += comboItem.totalPrice; // Includes price adjustment + modifiers
       }
     }
 
@@ -551,19 +553,47 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
                           // Show selected items or hint
                           if (hasSelections)
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 4,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: selectedForThis.map((item) {
-                                final comboProduct = widget.comboProductsMap[item.productId];
-                                return Chip(
-                                  label: Text(
-                                    '${item.productName}${item.priceAdjustment != 0 ? " (${item.priceAdjustment > 0 ? '+' : ''}${item.priceAdjustment.toStringAsFixed(2)})" : ""}',
-                                    style: const TextStyle(fontSize: 12),
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Main combo product
+                                      Chip(
+                                        label: Text(
+                                          '${item.productName}${item.totalPrice != 0 ? " (${item.totalPrice > 0 ? '+' : ''}\$${item.totalPrice.toStringAsFixed(2)})" : ""}',
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        padding: EdgeInsets.zero,
+                                        backgroundColor: Colors.blue[100],
+                                      ),
+                                      // Show modifiers if any
+                                      if (item.modifiers.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 16, top: 4),
+                                          child: Wrap(
+                                            spacing: 4,
+                                            runSpacing: 4,
+                                            children: item.modifiers.map((modifier) {
+                                              return Chip(
+                                                label: Text(
+                                                  '${modifier.attValName}${modifier.price > 0 ? " (+\$${modifier.price.toStringAsFixed(2)})" : ""}',
+                                                  style: const TextStyle(fontSize: 11),
+                                                ),
+                                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                padding: EdgeInsets.zero,
+                                                backgroundColor: Colors.blue[50],
+                                                visualDensity: VisualDensity.compact,
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                  padding: EdgeInsets.zero,
-                                  backgroundColor: Colors.blue[100],
                                 );
                               }).toList(),
                             )
@@ -610,6 +640,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         return _ComboSelectionSheet(
           category: category,
           availableProducts: availableProducts,
+          productAttributesMap: widget.productAttributesMap,
           initialSelections: _selectedCombos[category.typeNameSn] ?? [],
           onConfirm: (selections) {
             setState(() {
@@ -847,22 +878,38 @@ class _ModifierSelectionSheetState extends State<_ModifierSelectionSheet> {
 
                   // Use radio button style for single-select (maxNum = 1)
                   if (widget.attribute.maxNum == 1) {
-                    return RadioListTile<int>(
-                      title: Text(value.attValNameEn),
-                      subtitle: value.priceValue > 0
-                          ? Text(value.formattedPrice)
-                          : null,
-                      value: value.attValId,
-                      groupValue: currentSelections.isNotEmpty
-                          ? currentSelections.first.attValId
-                          : null,
-                      onChanged: (selectedId) {
+                    return InkWell(
+                      onTap: () {
                         setState(() {
-                          // Replace selection with new one
-                          currentSelections.clear();
-                          currentSelections.add(value);
+                          // If already selected and not mandatory, deselect it
+                          if (currentSelections.isNotEmpty &&
+                              currentSelections.first.attValId == value.attValId &&
+                              !widget.attribute.isMandatory) {
+                            currentSelections.clear();
+                          } else {
+                            // Replace selection with new one
+                            currentSelections.clear();
+                            currentSelections.add(value);
+                          }
                         });
                       },
+                      child: RadioListTile<int>(
+                        title: Text(
+                          value.attValNameEn,
+                          style: const TextStyle(color: Colors.black87),
+                        ),
+                        subtitle: value.priceValue > 0
+                            ? Text(
+                                value.formattedPrice,
+                                style: TextStyle(color: Colors.grey[700]),
+                              )
+                            : null,
+                        value: value.attValId,
+                        groupValue: currentSelections.isNotEmpty
+                            ? currentSelections.first.attValId
+                            : null,
+                        onChanged: null, // Disable default behavior, use InkWell instead
+                      ),
                     );
                   }
 
@@ -958,12 +1005,14 @@ class _ModifierSelectionSheetState extends State<_ModifierSelectionSheet> {
 class _ComboSelectionSheet extends StatefulWidget {
   final ComboCategory category;
   final List<Product> availableProducts;
+  final Map<int, List<ProductAttribute>> productAttributesMap;
   final List<SelectedComboItem> initialSelections;
   final Function(List<SelectedComboItem>) onConfirm;
 
   const _ComboSelectionSheet({
     required this.category,
     required this.availableProducts,
+    required this.productAttributesMap,
     required this.initialSelections,
     required this.onConfirm,
   });
@@ -981,11 +1030,11 @@ class _ComboSelectionSheetState extends State<_ComboSelectionSheet> {
     currentSelections = List<SelectedComboItem>.from(widget.initialSelections);
   }
 
-  /// Calculate total combo price adjustment for current selections
+  /// Calculate total combo price adjustment for current selections (including modifiers)
   double get _comboTotal {
     double total = 0.0;
     for (final selection in currentSelections) {
-      total += selection.priceAdjustment;
+      total += selection.totalPrice; // Includes price adjustment + modifiers
     }
     return total;
   }
@@ -997,6 +1046,93 @@ class _ComboSelectionSheetState extends State<_ComboSelectionSheet> {
       orElse: () => ComboProductInfo(productId: productId, productPrice: '0'),
     );
     return productInfo.priceValue;
+  }
+
+  /// Show modifier selection sheet for a combo product
+  void _showComboProductModifierSheet(
+    Product product,
+    List<ProductAttribute> attributes,
+    SelectedComboItem currentSelection,
+  ) {
+    // If no attributes available, show a message
+    if (attributes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No modifiers available for this product'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    // Convert ComboModifiers to a temporary selection map for the sheet
+    final Map<int, List<AttributeValue>> initialModifiers = {};
+
+    for (final attribute in attributes) {
+      final selectedValues = currentSelection.modifiers
+          .where((mod) => mod.attId == attribute.attId)
+          .map((mod) {
+            // Find the matching AttributeValue from the attribute
+            return attribute.values.firstWhere(
+              (val) => val.attValId == mod.attValId,
+              orElse: () => AttributeValue(
+                attValName: mod.attValName,
+                attValId: mod.attValId,
+                price: mod.price.toString(),
+                defaultChoose: 0,
+                attValSn: mod.attValSn,
+                minNum: 0,
+                maxNum: 1,
+                sort: 0,
+              ),
+            );
+          })
+          .toList();
+
+      initialModifiers[attribute.attId] = selectedValues;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return _ComboProductModifierSheet(
+          product: product,
+          attributes: attributes,
+          initialModifiers: initialModifiers,
+          onConfirm: (selectedModifiers) {
+            setState(() {
+              // Convert selected AttributeValues to ComboModifiers
+              final List<ComboModifier> comboModifiers = [];
+              selectedModifiers.forEach((attId, values) {
+                for (final value in values) {
+                  final attribute = attributes.firstWhere((attr) => attr.attId == attId);
+                  comboModifiers.add(
+                    ComboModifier(
+                      attId: attId,
+                      attName: attribute.attNameEn,
+                      attValId: value.attValId,
+                      attValName: value.attValNameEn,
+                      attValSn: value.attValSn,
+                      price: value.priceValue,
+                    ),
+                  );
+                }
+              });
+
+              // Find and update the selection
+              final index = currentSelections.indexWhere((item) => item.productId == product.productId);
+              if (index != -1) {
+                currentSelections[index] = currentSelections[index].copyWith(modifiers: comboModifiers);
+              }
+            });
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -1083,77 +1219,158 @@ class _ComboSelectionSheetState extends State<_ComboSelectionSheet> {
                   final isSelected = currentSelections.any(
                     (item) => item.productId == product.productId,
                   );
+                  // Check if product has modifiers using the hasModifiers flag from product
+                  final productAttributes = widget.productAttributesMap[product.productId] ?? [];
+                  // Show modifier button if product has the hasModifiers flag set OR if attributes are available
+                  final hasModifiers = product.hasModifiers == 1 || productAttributes.isNotEmpty;
 
-                  // Use radio button style for single-select (maxNum = 1)
-                  if (widget.category.maxNum == 1) {
-                    return RadioListTile<int>(
-                      title: Text(product.productNameEn),
-                      subtitle: priceAdjustment != 0
-                          ? Text(
-                              '${priceAdjustment > 0 ? '+' : ''}\$${priceAdjustment.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                color: priceAdjustment > 0 ? Colors.green[700] : Colors.red[700],
-                                fontWeight: FontWeight.w600,
-                              ),
-                            )
-                          : const Text('No extra charge'),
-                      value: product.productId,
-                      groupValue: currentSelections.isNotEmpty
-                          ? currentSelections.first.productId
-                          : null,
-                      onChanged: (selectedId) {
-                        setState(() {
-                          // Replace selection with new one
-                          currentSelections.clear();
-                          currentSelections.add(
-                            SelectedComboItem(
-                              categoryTypeNameSn: int.tryParse(widget.category.typeNameSn) ?? 0,
-                              categoryName: widget.category.typeNameEn,
-                              productId: product.productId,
-                              productName: product.productNameEn,
-                              priceAdjustment: priceAdjustment,
-                            ),
-                          );
-                        });
-                      },
-                    );
+                  // Get the current selection for this product (if selected)
+                  SelectedComboItem? currentSelection;
+                  if (isSelected) {
+                    try {
+                      currentSelection = currentSelections.firstWhere(
+                        (item) => item.productId == product.productId,
+                      );
+                    } catch (e) {
+                      currentSelection = null;
+                    }
                   }
 
-                  // Use checkbox for multi-select
-                  return CheckboxListTile(
-                    title: Text(product.productNameEn),
-                    subtitle: priceAdjustment != 0
-                        ? Text(
-                            '${priceAdjustment > 0 ? '+' : ''}\$${priceAdjustment.toStringAsFixed(2)}',
-                            style: TextStyle(
-                              color: priceAdjustment > 0 ? Colors.green[700] : Colors.red[700],
-                              fontWeight: FontWeight.w600,
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Use radio button style for single-select (maxNum = 1)
+                      if (widget.category.maxNum == 1)
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              // If already selected and not mandatory, deselect it
+                              if (currentSelections.isNotEmpty &&
+                                  currentSelections.first.productId == product.productId &&
+                                  !widget.category.isMandatory) {
+                                currentSelections.clear();
+                              } else {
+                                // Replace selection with new one
+                                currentSelections.clear();
+                                currentSelections.add(
+                                  SelectedComboItem(
+                                    categoryTypeNameSn: int.tryParse(widget.category.typeNameSn) ?? 0,
+                                    categoryName: widget.category.typeNameEn,
+                                    productId: product.productId,
+                                    productName: product.productNameEn,
+                                    priceAdjustment: priceAdjustment,
+                                  ),
+                                );
+                              }
+                            });
+                          },
+                          child: RadioListTile<int>(
+                            title: Text(
+                              product.productNameEn,
+                              style: const TextStyle(color: Colors.black87),
                             ),
-                          )
-                        : const Text('No extra charge'),
-                    value: isSelected,
-                    onChanged: (checked) {
-                      setState(() {
-                        if (checked == true) {
-                          // Check if we can add more
-                          if (currentSelections.length < widget.category.maxNum) {
-                            currentSelections.add(
-                              SelectedComboItem(
-                                categoryTypeNameSn: int.tryParse(widget.category.typeNameSn) ?? 0,
-                                categoryName: widget.category.typeNameEn,
-                                productId: product.productId,
-                                productName: product.productNameEn,
-                                priceAdjustment: priceAdjustment,
+                            subtitle: priceAdjustment != 0
+                                ? Text(
+                                    '${priceAdjustment > 0 ? '+' : ''}\$${priceAdjustment.toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                      color: priceAdjustment > 0 ? Colors.green[700] : Colors.red[700],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  )
+                                : Text(
+                                    'No extra charge',
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  ),
+                            value: product.productId,
+                            groupValue: currentSelections.isNotEmpty
+                                ? currentSelections.first.productId
+                                : null,
+                            onChanged: null, // Disable default behavior, use InkWell instead
+                          ),
+                        )
+                      // Use checkbox for multi-select
+                      else
+                        CheckboxListTile(
+                          title: Text(product.productNameEn),
+                          subtitle: priceAdjustment != 0
+                              ? Text(
+                                  '${priceAdjustment > 0 ? '+' : ''}\$${priceAdjustment.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    color: priceAdjustment > 0 ? Colors.green[700] : Colors.red[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                )
+                              : const Text('No extra charge'),
+                          value: isSelected,
+                          onChanged: (checked) {
+                            setState(() {
+                              if (checked == true) {
+                                // Check if we can add more
+                                if (currentSelections.length < widget.category.maxNum) {
+                                  currentSelections.add(
+                                    SelectedComboItem(
+                                      categoryTypeNameSn: int.tryParse(widget.category.typeNameSn) ?? 0,
+                                      categoryName: widget.category.typeNameEn,
+                                      productId: product.productId,
+                                      productName: product.productNameEn,
+                                      priceAdjustment: priceAdjustment,
+                                    ),
+                                  );
+                                }
+                              } else {
+                                currentSelections.removeWhere(
+                                  (item) => item.productId == product.productId,
+                                );
+                              }
+                            });
+                          },
+                        ),
+
+                      // Show modifiers button if product is selected and has modifiers
+                      if (isSelected && hasModifiers && currentSelection != null)
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Show selected modifiers
+                              if (currentSelection.modifiers.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Wrap(
+                                    spacing: 4,
+                                    runSpacing: 4,
+                                    children: currentSelection.modifiers.map((mod) {
+                                      return Chip(
+                                        label: Text(
+                                          '${mod.attValName}${mod.price > 0 ? " (+\$${mod.price.toStringAsFixed(2)})" : ""}',
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                        visualDensity: VisualDensity.compact,
+                                        backgroundColor: Colors.orange[100],
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              // Customize button
+                              TextButton.icon(
+                                onPressed: () {
+                                  if (currentSelection != null) {
+                                    _showComboProductModifierSheet(product, productAttributes, currentSelection);
+                                  }
+                                },
+                                icon: const Icon(Icons.tune, size: 18),
+                                label: Text(currentSelection!.modifiers.isEmpty ? 'Add Modifiers' : 'Edit Modifiers'),
+                                style: TextButton.styleFrom(
+                                  foregroundColor: Colors.blue[700],
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                ),
                               ),
-                            );
-                          }
-                        } else {
-                          currentSelections.removeWhere(
-                            (item) => item.productId == product.productId,
-                          );
-                        }
-                      });
-                    },
+                            ],
+                          ),
+                        ),
+                      const Divider(height: 1),
+                    ],
                   );
                 },
               ),
@@ -1211,6 +1428,227 @@ class _ComboSelectionSheetState extends State<_ComboSelectionSheet> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Modifier selection sheet for combo products
+class _ComboProductModifierSheet extends StatefulWidget {
+  final Product product;
+  final List<ProductAttribute> attributes;
+  final Map<int, List<AttributeValue>> initialModifiers;
+  final Function(Map<int, List<AttributeValue>>) onConfirm;
+
+  const _ComboProductModifierSheet({
+    required this.product,
+    required this.attributes,
+    required this.initialModifiers,
+    required this.onConfirm,
+  });
+
+  @override
+  State<_ComboProductModifierSheet> createState() => _ComboProductModifierSheetState();
+}
+
+class _ComboProductModifierSheetState extends State<_ComboProductModifierSheet> {
+  late Map<int, List<AttributeValue>> currentModifiers;
+
+  @override
+  void initState() {
+    super.initState();
+    currentModifiers = Map<int, List<AttributeValue>>.from(widget.initialModifiers);
+    // Initialize empty lists for attributes that don't have selections
+    for (final attribute in widget.attributes) {
+      currentModifiers.putIfAbsent(attribute.attId, () => []);
+    }
+  }
+
+  /// Calculate total modifier price
+  double get _modifierTotal {
+    double total = 0.0;
+    for (final modifierList in currentModifiers.values) {
+      for (final modifier in modifierList) {
+        total += modifier.priceValue;
+      }
+    }
+    return total;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.5,
+      maxChildSize: 0.95,
+      expand: false,
+      builder: (context, scrollController) {
+        return Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Customize ${widget.product.productNameEn}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (_modifierTotal > 0) ...[
+                          const SizedBox(height: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.green[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.green[300]!),
+                            ),
+                            child: Text(
+                              '+\$${_modifierTotal.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+
+            // Attributes list
+            Expanded(
+              child: ListView.builder(
+                controller: scrollController,
+                itemCount: widget.attributes.length,
+                itemBuilder: (context, index) {
+                  final attribute = widget.attributes[index];
+                  final selectedForThis = currentModifiers[attribute.attId] ?? [];
+
+                  return ExpansionTile(
+                    title: Text(attribute.attNameEn),
+                    subtitle: Text(
+                      attribute.isMandatory
+                          ? 'Required - Select ${attribute.minNum}'
+                          : 'Optional - Select up to ${attribute.maxNum}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: attribute.isMandatory ? Colors.red : Colors.grey[600],
+                      ),
+                    ),
+                    children: attribute.values.map((value) {
+                      final isSelected = selectedForThis.any((v) => v.attValId == value.attValId);
+
+                      // Single select (radio style)
+                      if (attribute.maxNum == 1) {
+                        return InkWell(
+                          onTap: () {
+                            setState(() {
+                              // If already selected and not mandatory, deselect it
+                              if (selectedForThis.isNotEmpty &&
+                                  selectedForThis.first.attValId == value.attValId &&
+                                  !attribute.isMandatory) {
+                                currentModifiers[attribute.attId] = [];
+                              } else {
+                                currentModifiers[attribute.attId] = [value];
+                              }
+                            });
+                          },
+                          child: RadioListTile<int>(
+                            title: Text(
+                              value.attValNameEn,
+                              style: const TextStyle(color: Colors.black87),
+                            ),
+                            subtitle: value.priceValue > 0
+                                ? Text(
+                                    value.formattedPrice,
+                                    style: TextStyle(color: Colors.grey[700]),
+                                  )
+                                : null,
+                            value: value.attValId,
+                            groupValue: selectedForThis.isNotEmpty ? selectedForThis.first.attValId : null,
+                            onChanged: null, // Disable default behavior, use InkWell instead
+                          ),
+                        );
+                      }
+
+                      // Multi select (checkbox style)
+                      return CheckboxListTile(
+                        title: Text(value.attValNameEn),
+                        subtitle: value.priceValue > 0 ? Text(value.formattedPrice) : null,
+                        value: isSelected,
+                        onChanged: (checked) {
+                          setState(() {
+                            if (checked == true) {
+                              if (selectedForThis.length < attribute.maxNum) {
+                                currentModifiers[attribute.attId] = [...selectedForThis, value];
+                              }
+                            } else {
+                              currentModifiers[attribute.attId] = selectedForThis
+                                  .where((v) => v.attValId != value.attValId)
+                                  .toList();
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
+            ),
+
+            // Confirm button
+            SafeArea(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      offset: const Offset(0, -2),
+                      blurRadius: 4,
+                    ),
+                  ],
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      widget.onConfirm(currentModifiers);
+                      Navigator.pop(context);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text(
+                      'Confirm',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                  ),
                 ),
               ),
             ),
