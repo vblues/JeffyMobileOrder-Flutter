@@ -8,7 +8,6 @@ import '../../data/repositories/store_repository_impl.dart';
 import '../bloc/store_bloc.dart';
 import '../bloc/store_event.dart';
 import '../bloc/store_state.dart';
-import '../widgets/web_safe_image.dart';
 
 class StoreLocatorPage extends StatelessWidget {
   final String storeId;
@@ -52,13 +51,29 @@ class _StoreLocatorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Store Locator'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      ),
-      body: BlocBuilder<StoreBloc, StoreState>(
-        builder: (context, state) {
+    return BlocBuilder<StoreBloc, StoreState>(
+      builder: (context, state) {
+        // Get store name and brand color for app bar
+        String appBarTitle = 'Store Locator';
+        Color appBarColor = Theme.of(context).colorScheme.primary;
+
+        if (state is StoreLoaded && state.storeInfo != null) {
+          appBarTitle = state.storeInfo!.storeNameEn;
+          appBarColor = _parseColor(state.storeInfo!.brandColor);
+        }
+
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(appBarTitle),
+            backgroundColor: appBarColor,
+          ),
+          body: _buildBody(context, state),
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(BuildContext context, StoreState state) {
           if (state is StoreLoading) {
             return Center(
               child: Column(
@@ -139,230 +154,30 @@ class _StoreLocatorView extends StatelessWidget {
           }
 
           if (state is StoreLoaded) {
-            final storeInfo = state.storeInfo;
+            // Automatically navigate to menu page when store data is loaded
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.go('/menu');
+            });
 
-            if (storeInfo == null) {
-              return const Center(
-                child: Text('No store information available'),
-              );
-            }
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Store Logo and Landing Page Image
-                  if (storeInfo.secureLogoUrl != null)
-                    Center(
-                      child: WebSafeImage(
-                        imageUrl: storeInfo.secureLogoUrl!,
-                        height: 80,
-                        errorWidget: const Icon(Icons.store, size: 80),
-                      ),
-                    ),
-                  const SizedBox(height: 16),
-
-                  // Store Name Card
-                  Card(
-                    elevation: 4.0,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.store,
-                              size: 32,
-                              color: _parseColor(storeInfo.brandColor),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                storeInfo.storeNameEn,
-                                style: Theme.of(context).textTheme.headlineSmall,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        _buildInfoRow(
-                          Icons.tag,
-                          'Store ID',
-                          storeInfo.storeId.toString(),
-                        ),
-                        _buildInfoRow(
-                          Icons.qr_code,
-                          'Store SN',
-                          storeInfo.storeSn,
-                        ),
-                        if (storeInfo.street != null)
-                          _buildInfoRow(
-                            Icons.location_on,
-                            'Location',
-                            storeInfo.street!,
-                          ),
-                        if (storeInfo.contactPhone != null)
-                          _buildInfoRow(
-                            Icons.phone,
-                            'Phone',
-                            storeInfo.contactPhone!,
-                          ),
-                      ],
-                    ),
-                      ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Success Message
-                  Card(
-                    color: Colors.green[50],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                      children: [
-                        const Icon(Icons.check_circle, color: Colors.green),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Store Data Loaded Successfully',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'API integration with MD5 signing is working correctly.',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                      ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Debug Info
-                  Card(
-                    color: Colors.blue[50],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Phase 2 Complete ✓',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text('• Store locator API integration'),
-                        const Text('• MD5 signature authentication'),
-                        const Text('• BLoC state management'),
-                        const Text('• Data models and repository'),
-                        const Text('• Local storage caching'),
-                      ],
-                    ),
-                      ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // View Menu Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        context.go('/menu');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text('View Menu'),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Back Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        final entryUrl = preferences.getString(StorageKeys.entryUrl);
-                        if (entryUrl != null) {
-                          context.go(entryUrl);
-                        } else {
-                          context.go('/');
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text('Back to Home'),
-                    ),
-                  ),
-                ],
-              ),
+            // Show loading indicator while navigating
+            return const Center(
+              child: CircularProgressIndicator(),
             );
           }
 
           return const Center(
             child: Text('Ready to load store data'),
           );
-        },
-      ),
-    );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
+  /// Parse hex color string to Flutter Color
   Color _parseColor(String hexColor) {
     try {
-      return Color(int.parse(hexColor.substring(1), radix: 16) + 0xFF000000);
+      // Remove # if present and parse
+      final hex = hexColor.replaceFirst('#', '');
+      return Color(int.parse(hex, radix: 16) + 0xFF000000);
     } catch (e) {
+      // Fallback to default orange color
       return const Color(0xFF996600);
     }
   }

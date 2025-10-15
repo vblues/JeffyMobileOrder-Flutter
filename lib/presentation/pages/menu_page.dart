@@ -88,6 +88,10 @@ class MenuPage extends StatelessWidget {
         final storeInfoData = json.decode(storeInfoJson) as Map<String, dynamic>;
         final storeId = storeInfoData['id'] as int? ?? 0;
 
+        // Extract store name and brand color
+        final storeName = _extractStoreName(storeInfoData);
+        final brandColor = _extractBrandColor(storeInfoData);
+
         return BlocProvider(
           create: (context) => MenuBloc(
             menuRepository: MenuRepository(
@@ -97,15 +101,50 @@ class MenuPage extends StatelessWidget {
             credentials: credentials,
             storeId: storeId,
           )..add(LoadMenu()),
-          child: const _MenuPageView(),
+          child: _MenuPageView(
+            storeName: storeName,
+            brandColor: brandColor,
+          ),
         );
       },
     );
   }
+
+  static String _extractStoreName(Map<String, dynamic> storeInfoData) {
+    try {
+      final storeNameJson = storeInfoData['storeName'] ?? storeInfoData['store_name'];
+      if (storeNameJson is String) {
+        final nameMap = json.decode(storeNameJson) as Map<String, dynamic>;
+        return nameMap['en'] as String? ?? nameMap['cn'] as String? ?? 'Menu';
+      }
+      return 'Menu';
+    } catch (e) {
+      return 'Menu';
+    }
+  }
+
+  static String _extractBrandColor(Map<String, dynamic> storeInfoData) {
+    try {
+      final storeNoteJson = storeInfoData['storeNote'] ?? storeInfoData['store_note'];
+      if (storeNoteJson is String) {
+        final noteMap = json.decode(storeNoteJson) as Map<String, dynamic>;
+        return noteMap['LandingPage']?['TopBarColorCode'] as String? ?? '#996600';
+      }
+      return '#996600';
+    } catch (e) {
+      return '#996600';
+    }
+  }
 }
 
 class _MenuPageView extends StatefulWidget {
-  const _MenuPageView();
+  final String storeName;
+  final String brandColor;
+
+  const _MenuPageView({
+    required this.storeName,
+    required this.brandColor,
+  });
 
   @override
   State<_MenuPageView> createState() => _MenuPageViewState();
@@ -139,8 +178,8 @@ class _MenuPageViewState extends State<_MenuPageView> {
                   context.read<MenuBloc>().add(SearchProducts(value));
                 },
               )
-            : const Text('Menu'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+            : Text(widget.storeName),
+        backgroundColor: _parseColor(widget.brandColor),
         actions: [
           IconButton(
             icon: Icon(_isSearching ? Icons.close : Icons.search),
@@ -544,5 +583,17 @@ class _MenuPageViewState extends State<_MenuPageView> {
         ),
       ),
     );
+  }
+
+  /// Parse hex color string to Flutter Color
+  Color _parseColor(String hexColor) {
+    try {
+      // Remove # if present and parse
+      final hex = hexColor.replaceFirst('#', '');
+      return Color(int.parse(hex, radix: 16) + 0xFF000000);
+    } catch (e) {
+      // Fallback to default orange color
+      return const Color(0xFF996600);
+    }
   }
 }
