@@ -17,12 +17,19 @@ class StoreCredentialsModel {
   });
 
   factory StoreCredentialsModel.fromJson(Map<String, dynamic> json) {
+    // Helper function to safely convert any value to String
+    String _toString(dynamic value) {
+      if (value == null) return '';
+      if (value is String) return value;
+      return value.toString();
+    }
+
     return StoreCredentialsModel(
-      appKey: json['appKey'] as String? ?? '',
-      appSecret: json['appSecret'] as String? ?? '',
-      tenantId: json['tenantID'] as String? ?? '',
-      deviceId: json['deviceID'] as String? ?? '',
-      apiDomain: json['apiDomain'] as String? ?? '',
+      appKey: _toString(json['appKey']),
+      appSecret: _toString(json['appSecret']),
+      tenantId: _toString(json['tenantID']),
+      deviceId: _toString(json['deviceID']),
+      apiDomain: _toString(json['apiDomain']),
     );
   }
 

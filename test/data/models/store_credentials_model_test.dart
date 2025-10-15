@@ -102,5 +102,45 @@ void main() {
       expect(stringRepresentation, contains('device1'));
       expect(stringRepresentation, contains('https://test.com'));
     });
+
+    test('fromJson handles integer values by converting to string', () {
+      // Arrange - API sometimes returns integers instead of strings
+      const jsonWithInts = {
+        'appKey': 'testKey',
+        'appSecret': 'testSecret',
+        'tenantID': 1013, // Integer instead of string
+        'deviceID': 'device123',
+        'apiDomain': 'https://api.example.com',
+      };
+
+      // Act
+      final model = StoreCredentialsModel.fromJson(jsonWithInts);
+
+      // Assert
+      expect(model.tenantId, equals('1013')); // Converted to string
+      expect(model.appKey, equals('testKey'));
+      expect(model.deviceId, equals('device123'));
+    });
+
+    test('fromJson handles all integer values', () {
+      // Arrange - Extreme case where all values are integers
+      const jsonAllInts = {
+        'appKey': 123,
+        'appSecret': 456,
+        'tenantID': 789,
+        'deviceID': 1011,
+        'apiDomain': 1213,
+      };
+
+      // Act
+      final model = StoreCredentialsModel.fromJson(jsonAllInts);
+
+      // Assert
+      expect(model.appKey, equals('123'));
+      expect(model.appSecret, equals('456'));
+      expect(model.tenantId, equals('789'));
+      expect(model.deviceId, equals('1011'));
+      expect(model.apiDomain, equals('1213'));
+    });
   });
 }
