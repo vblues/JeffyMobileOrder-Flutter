@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:getwidget/getwidget.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/storage_keys.dart';
@@ -9,6 +8,7 @@ import '../../data/repositories/store_repository_impl.dart';
 import '../bloc/store_bloc.dart';
 import '../bloc/store_event.dart';
 import '../bloc/store_state.dart';
+import '../widgets/web_safe_image.dart';
 
 class StoreLocatorPage extends StatelessWidget {
   final String storeId;
@@ -53,7 +53,7 @@ class _StoreLocatorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GFAppBar(
+      appBar: AppBar(
         title: const Text('Store Locator'),
         backgroundColor: Theme.of(context).colorScheme.primary,
       ),
@@ -100,15 +100,22 @@ class _StoreLocatorView extends StatelessWidget {
                       style: const TextStyle(color: Colors.red),
                     ),
                     const SizedBox(height: 24),
-                    GFButton(
+                    ElevatedButton(
                       onPressed: () {
                         context.read<StoreBloc>().add(FetchStoreData(storeId));
                       },
-                      text: 'Retry',
-                      color: GFColors.DANGER,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                      ),
+                      child: const Text('Retry'),
                     ),
                     const SizedBox(height: 8),
-                    GFButton(
+                    OutlinedButton(
                       onPressed: () {
                         final entryUrl = preferences.getString(StorageKeys.entryUrl);
                         if (entryUrl != null) {
@@ -117,8 +124,13 @@ class _StoreLocatorView extends StatelessWidget {
                           context.go('/');
                         }
                       },
-                      text: 'Back to Home',
-                      color: GFColors.SECONDARY,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                      ),
+                      child: const Text('Back to Home'),
                     ),
                   ],
                 ),
@@ -141,22 +153,22 @@ class _StoreLocatorView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Store Logo and Landing Page Image
-                  if (storeInfo.logoUrl != null)
+                  if (storeInfo.secureLogoUrl != null)
                     Center(
-                      child: Image.network(
-                        storeInfo.logoUrl!,
+                      child: WebSafeImage(
+                        imageUrl: storeInfo.secureLogoUrl!,
                         height: 80,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.store, size: 80),
+                        errorWidget: const Icon(Icons.store, size: 80),
                       ),
                     ),
                   const SizedBox(height: 16),
 
                   // Store Name Card
-                  GFCard(
-                    boxFit: BoxFit.cover,
+                  Card(
                     elevation: 4.0,
-                    content: Column(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
@@ -200,13 +212,16 @@ class _StoreLocatorView extends StatelessWidget {
                           ),
                       ],
                     ),
+                      ),
                   ),
                   const SizedBox(height: 16),
 
                   // Success Message
-                  GFCard(
+                  Card(
                     color: Colors.green[50],
-                    content: Row(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
                       children: [
                         const Icon(Icons.check_circle, color: Colors.green),
                         const SizedBox(width: 12),
@@ -231,13 +246,16 @@ class _StoreLocatorView extends StatelessWidget {
                         ),
                       ],
                     ),
+                      ),
                   ),
                   const SizedBox(height: 16),
 
                   // Debug Info
-                  GFCard(
+                  Card(
                     color: Colors.blue[50],
-                    content: Column(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
@@ -255,22 +273,44 @@ class _StoreLocatorView extends StatelessWidget {
                         const Text('• Local storage caching'),
                       ],
                     ),
+                      ),
                   ),
                   const SizedBox(height: 24),
 
+                  // View Menu Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.go('/menu');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text('View Menu'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
                   // Back Button
-                  GFButton(
-                    onPressed: () {
-                      final entryUrl = preferences.getString(StorageKeys.entryUrl);
-                      if (entryUrl != null) {
-                        context.go(entryUrl);
-                      } else {
-                        context.go('/');
-                      }
-                    },
-                    text: 'Back to Home',
-                    color: GFColors.SECONDARY,
-                    fullWidthButton: true,
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        final entryUrl = preferences.getString(StorageKeys.entryUrl);
+                        if (entryUrl != null) {
+                          context.go(entryUrl);
+                        } else {
+                          context.go('/');
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: const Text('Back to Home'),
+                    ),
                   ),
                 ],
               ),

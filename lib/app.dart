@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'presentation/pages/home_page.dart';
 import 'presentation/pages/store_locator_page.dart';
+import 'presentation/pages/menu_page.dart';
 
 class MobileOrderApp extends StatelessWidget {
   const MobileOrderApp({super.key});
@@ -36,6 +37,10 @@ final GoRouter _router = GoRouter(
         final storeId = state.pathParameters['storeId']!;
         return StoreLocatorPage(storeId: storeId);
       },
+    ),
+    GoRoute(
+      path: '/menu',
+      builder: (context, state) => const MenuPage(),
     ),
     // TODO: Add table service route in Phase 2
     // GoRoute(

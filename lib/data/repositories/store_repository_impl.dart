@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/storage_keys.dart';
 import '../datasources/store_remote_datasource.dart';
@@ -81,7 +82,23 @@ class StoreRepository {
   }
 
   Future<void> _saveStoreInfo(StoreInfoResponse storeInfo) async {
-    // For now, just save a simple flag. Full implementation would save complete data
-    await sharedPreferences.setBool(StorageKeys.storeInfo, true);
+    // Save the full store info as JSON
+    if (storeInfo.storeInfos.isNotEmpty) {
+      final storeData = storeInfo.storeInfos.first;
+      final jsonData = {
+        'id': storeData.storeId,
+        'store_name': storeData.storeName, // Raw JSON string
+        'store_sn': storeData.storeSn,
+        'store_note': storeData.storeNote,
+        'brand_color': storeData.brandColor,
+        'logo_url': storeData.logoUrl,
+        'street': storeData.street,
+        'contact_phone': storeData.contactPhone,
+      };
+      await sharedPreferences.setString(
+        StorageKeys.storeInfo,
+        json.encode(jsonData),
+      );
+    }
   }
 }

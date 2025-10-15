@@ -124,6 +124,16 @@ class StoreInfo {
     }
   }
 
+  /// Get secure HTTPS logo URL (convert HTTP to HTTPS)
+  String? get secureLogoUrl {
+    final url = logoUrl;
+    if (url == null) return null;
+    if (url.startsWith('http://')) {
+      return url.replaceFirst('http://', 'https://');
+    }
+    return url;
+  }
+
   /// Get landing page image URL from store_note
   String? get landingPageUrl {
     try {
@@ -132,6 +142,16 @@ class StoreInfo {
     } catch (e) {
       return null;
     }
+  }
+
+  /// Get secure HTTPS landing page URL (convert HTTP to HTTPS)
+  String? get secureLandingPageUrl {
+    final url = landingPageUrl;
+    if (url == null) return null;
+    if (url.startsWith('http://')) {
+      return url.replaceFirst('http://', 'https://');
+    }
+    return url;
   }
 }
 
