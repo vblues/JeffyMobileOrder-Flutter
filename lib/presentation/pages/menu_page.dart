@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/storage_keys.dart';
 import '../../data/datasources/menu_remote_datasource.dart';
+import '../../data/models/combo_model.dart';
 import '../../data/models/product_model.dart';
+import '../../data/models/product_attribute_model.dart';
 import '../../data/models/store_credentials_model.dart';
 import '../../data/repositories/menu_repository_impl.dart';
 import '../bloc/menu_bloc.dart';
@@ -404,6 +406,19 @@ class _MenuPageViewState extends State<_MenuPageView> {
   }
 
   Widget _buildProductCard(BuildContext context, Product product) {
+    // Get product attributes and combo categories from menu state
+    final menuState = context.read<MenuBloc>().state;
+    final attributes = menuState is MenuLoaded
+        ? menuState.getProductAttributes(product.productId)
+        : <ProductAttribute>[];
+    // Get only selectable combo categories (categories after the first matcher category)
+    final comboCategories = menuState is MenuLoaded
+        ? menuState.getSelectableComboCategories(product.productId)
+        : <ComboCategory>[];
+    final comboProductsMap = menuState is MenuLoaded
+        ? menuState.comboProductsMap
+        : <int, Product>{};
+
     return Card(
       elevation: 2.0,
       clipBehavior: Clip.antiAlias,
@@ -415,7 +430,12 @@ class _MenuPageViewState extends State<_MenuPageView> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProductDetailPage(product: product),
+              builder: (context) => ProductDetailPage(
+                product: product,
+                attributes: attributes,
+                comboCategories: comboCategories,
+                comboProductsMap: comboProductsMap,
+              ),
             ),
           );
         },
@@ -491,7 +511,12 @@ class _MenuPageViewState extends State<_MenuPageView> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProductDetailPage(product: product),
+                            builder: (context) => ProductDetailPage(
+                              product: product,
+                              attributes: attributes,
+                              comboCategories: comboCategories,
+                              comboProductsMap: comboProductsMap,
+                            ),
                           ),
                         );
                       },

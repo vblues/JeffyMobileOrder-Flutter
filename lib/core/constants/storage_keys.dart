@@ -7,5 +7,7 @@ class StorageKeys {
   static const String cart = 'CART';
   static const String menu = 'MENU';
   static const String productByStore = 'PRODUCT_BY_STORE';
-  static const String productByAtt = 'PRODUCT_BY_ATT';
+  static const String productAtt = 'PRODUCT_ATT';
+  static const String comboActivities = 'COMBO_ACTIVITIES';
+  static const String comboProducts = 'COMBO_PRODUCTS';
 }

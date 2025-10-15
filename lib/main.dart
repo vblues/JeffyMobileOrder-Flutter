@@ -5,7 +5,7 @@ import 'app.dart';
 // Version info - update this when bumping version in pubspec.yaml
 // Current: pubspec.yaml line 19
 const kAppVersion = '1.0.0';
-const kBuildNumber = '30'; // Build 30: Price positioned closer to Add button
+const kBuildNumber = '36'; // Build 36: Fix cache isolation - use store-specific cache keys
 
 void main() {
   // Log version information for debugging

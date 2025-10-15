@@ -8,6 +8,8 @@ class ApiConstants {
   static const String getMenu = 'api/mobile/getMenu';
   static const String getProductByStore = 'api/mobile/getProductByStore';
   static const String getProductAtt = 'api/mobile/getProductAtt';
+  static const String getActivityComboWithPrice = 'api/mobile/getActivityComboWithPrice';
+  static const String getStoreComboProduct = 'api/mobile/getStoreComboProduct';
   static const String userLogin = 'api/user/userLogin';
   static const String userRegister = 'api/user/userRegister';
   static const String getOtp = 'api/user/getOTP';

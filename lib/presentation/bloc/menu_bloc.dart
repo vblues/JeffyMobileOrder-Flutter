@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/menu_model.dart';
 import '../../data/models/product_model.dart';
+import '../../data/models/product_attribute_model.dart';
+import '../../data/models/combo_model.dart';
 import '../../data/models/store_credentials_model.dart';
 import '../../data/repositories/menu_repository_impl.dart';
 import 'menu_event.dart';
@@ -56,10 +58,74 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
           .where((product) => product.isActive)
           .toList();
 
+      // Fetch product attributes (modifiers)
+      Map<int, List<ProductAttribute>> attributesMap = {};
+      try {
+        final attributeResponse = await menuRepository.getProductAtt(
+          credentials: credentials,
+          storeId: storeId,
+          forceRefresh: event.forceRefresh,
+        );
+
+        if (attributeResponse.resultCode == 200) {
+          // Build map of product_id -> attributes
+          for (final group in attributeResponse.attributes) {
+            attributesMap[group.productId] = group.attributes;
+          }
+        }
+      } catch (e) {
+        // Continue without attributes if fetch fails
+        // This is non-critical, so don't block menu loading
+        print('Warning: Failed to load product attributes: $e');
+      }
+
+      // Fetch combo activities
+      List<ComboActivity> comboActivities = [];
+      try {
+        final comboResponse = await menuRepository.getActivityComboWithPrice(
+          credentials: credentials,
+          storeId: storeId,
+          forceRefresh: event.forceRefresh,
+        );
+
+        if (comboResponse.resultCode == 200) {
+          // Filter only active combos
+          comboActivities = comboResponse.activities
+              .where((activity) => activity.isActive)
+              .toList();
+        }
+      } catch (e) {
+        // Continue without combo activities if fetch fails
+        print('Warning: Failed to load combo activities: $e');
+      }
+
+      // Fetch combo products
+      Map<int, Product> comboProductsMap = {};
+      try {
+        final comboProductsResponse = await menuRepository.getStoreComboProduct(
+          credentials: credentials,
+          storeId: storeId,
+          forceRefresh: event.forceRefresh,
+        );
+
+        if (comboProductsResponse.isSuccess) {
+          // Build map of product_id -> product for quick lookup
+          for (final product in comboProductsResponse.products) {
+            comboProductsMap[product.productId] = product;
+          }
+        }
+      } catch (e) {
+        // Continue without combo products if fetch fails
+        print('Warning: Failed to load combo products: $e');
+      }
+
       emit(MenuLoaded(
         categories: menuResponse.menu,
         allProducts: activeProducts,
         filteredProducts: activeProducts,
+        productAttributes: attributesMap,
+        comboActivities: comboActivities,
+        comboProductsMap: comboProductsMap,
       ));
     } catch (e) {
       emit(MenuError('Error loading menu: ${e.toString()}'));
