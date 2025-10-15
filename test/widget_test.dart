@@ -9,12 +9,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mobileorder/app.dart';
 
 void main() {
-  testWidgets('Mobile Order App loads home page', (WidgetTester tester) async {
+  testWidgets('Mobile Order App loads QR code scan prompt', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MobileOrderApp());
 
-    // Verify that the home page loads with welcome text
-    expect(find.text('Welcome to Mobile Order'), findsOneWidget);
-    expect(find.text('Flutter Web Application'), findsOneWidget);
+    // Verify that the home page shows QR code scan prompt
+    expect(find.text('Please Scan QR Code'), findsOneWidget);
+    expect(find.text('To access the menu and place your order, please scan the QR code at your table or at the counter.'), findsOneWidget);
   });
 }

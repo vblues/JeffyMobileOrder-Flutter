@@ -2,6 +2,7 @@ class StorageKeys {
   static const String storeCredentials = 'STORE_CREDENTIALS';
   static const String storeInfo = 'STORE_INFO';
   static const String storeId = 'STORE_ID';
+  static const String entryUrl = 'ENTRY_URL'; // Store the initial QR code entry URL
   static const String userInfo = 'USER_INFO';
   static const String cart = 'CART';
   static const String menu = 'MENU';

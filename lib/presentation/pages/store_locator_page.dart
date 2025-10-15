@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:getwidget/getwidget.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/constants/storage_keys.dart';
 import '../../data/datasources/store_remote_datasource.dart';
 import '../../data/repositories/store_repository_impl.dart';
 import '../bloc/store_bloc.dart';
@@ -24,6 +26,10 @@ class StoreLocatorPage extends StatelessWidget {
           );
         }
 
+        // Save entry URL on first visit
+        final entryUrl = '/locate/$storeId';
+        snapshot.data!.setString(StorageKeys.entryUrl, entryUrl);
+
         return BlocProvider(
           create: (context) => StoreBloc(
             storeRepository: StoreRepository(
@@ -31,7 +37,7 @@ class StoreLocatorPage extends StatelessWidget {
               sharedPreferences: snapshot.data!,
             ),
           )..add(FetchStoreData(storeId)),
-          child: _StoreLocatorView(storeId: storeId),
+          child: _StoreLocatorView(storeId: storeId, preferences: snapshot.data!),
         );
       },
     );
@@ -40,8 +46,9 @@ class StoreLocatorPage extends StatelessWidget {
 
 class _StoreLocatorView extends StatelessWidget {
   final String storeId;
+  final SharedPreferences preferences;
 
-  const _StoreLocatorView({required this.storeId});
+  const _StoreLocatorView({required this.storeId, required this.preferences});
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +110,12 @@ class _StoreLocatorView extends StatelessWidget {
                     const SizedBox(height: 8),
                     GFButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        final entryUrl = preferences.getString(StorageKeys.entryUrl);
+                        if (entryUrl != null) {
+                          context.go(entryUrl);
+                        } else {
+                          context.go('/');
+                        }
                       },
                       text: 'Back to Home',
                       color: GFColors.SECONDARY,
@@ -249,7 +261,12 @@ class _StoreLocatorView extends StatelessWidget {
                   // Back Button
                   GFButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      final entryUrl = preferences.getString(StorageKeys.entryUrl);
+                      if (entryUrl != null) {
+                        context.go(entryUrl);
+                      } else {
+                        context.go('/');
+                      }
                     },
                     text: 'Back to Home',
                     color: GFColors.SECONDARY,
