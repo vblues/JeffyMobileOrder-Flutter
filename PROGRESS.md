@@ -1,6 +1,6 @@
 # Mobile Order Flutter Web App - Development Progress
 
-**Last Updated:** Build #22 (2025-10-15)
+**Last Updated:** Build #49 (2025-10-15)
 **Project:** Flutter Web Mobile Ordering Application
 **Repository:** `/var/www/mobileorder.jeffy.sg`
 **Production URL:** `https://mobileorderuat.jeffy.sg`
@@ -27,6 +27,7 @@ A Flutter web application for mobile food ordering, designed to replace/compleme
   - `shared_preferences` - Local storage
   - `url_strategy` - Clean URLs without #
   - `crypto` - MD5 signing
+  - `uuid` - Cart item unique IDs (added Build #43)
 
 ### Phase 2: Store Locator & API Integration (Builds #9-15)
 - ✅ QR code entry flow: `/locate/:storeId`
@@ -81,6 +82,78 @@ A Flutter web application for mobile food ordering, designed to replace/compleme
 - ✅ Price always visible regardless of name length
 - ✅ Proper spacing and flexible layout
 
+### Phase 7: Product Modifiers & Attributes (Builds #23-40)
+- ✅ Product attribute API integration (`getProductAtt`)
+- ✅ Attribute models (`ProductAttribute`, `AttributeValue`)
+- ✅ Product detail page with modifier selection UI
+- ✅ Multi-select and single-select attribute support
+- ✅ Mandatory vs optional modifiers
+- ✅ Price adjustments for modifiers
+- ✅ Validation for required selections
+- ✅ Radio button deselection support
+
+### Phase 8: Combo Products (Builds #38-42)
+- ✅ Combo activity API integration (`getActivityComboWithPrice`)
+- ✅ Combo models (`ComboActivity`, `ComboCategory`, `ComboProductInfo`)
+- ✅ Combo product selection in product detail page
+- ✅ Nested combo product modifiers
+- ✅ Category-based combo selection
+- ✅ Min/max quantity validation for combo categories
+- ✅ Price calculations for combo items
+- ✅ "Add Modifiers" button only shows when modifiers exist
+
+### Phase 9: Entry Flow & Branding (Build #41)
+- ✅ Auto-navigation from store locator to menu
+- ✅ Dynamic brand color extraction from store config
+- ✅ AppBar colors match store branding
+- ✅ Seamless QR code to menu experience
+
+### Phase 10: Data Models & Testing (Build #40)
+- ✅ Comprehensive model documentation
+- ✅ Unit tests for cart models
+- ✅ API documentation updates
+- ✅ Cache expiration and store isolation
+
+### Phase 11: Shopping Cart (Builds #43-49)
+- ✅ **Cart Data Models:**
+  - `CartItem` with product, modifiers, combos, quantity
+  - `CartModifier` for product customizations
+  - `CartComboItem` with nested modifiers
+  - `CartSummary` for order totals
+- ✅ **Cart BLoC State Management:**
+  - Events: LoadCart, AddToCart, RemoveFromCart, UpdateQuantity, ClearCart
+  - States: Initial, Loading, Loaded, ItemAdded, ItemRemoved, Error
+  - Real-time cart updates
+- ✅ **Cart Persistence:**
+  - SharedPreferences/localStorage integration
+  - Survives page refreshes
+  - Graceful handling of corrupted data
+- ✅ **Cart Page UI:**
+  - Product list with images, names, prices
+  - Modifier and combo item display
+  - Quantity controls (+/- buttons)
+  - Delete individual items
+  - Clear all functionality
+  - Order summary (subtotal, service charge, tax, total)
+  - Checkout button with item count
+- ✅ **Menu Integration:**
+  - Cart badge on AppBar (shows total item count)
+  - Cart badge positioned at corner (Build #44-47)
+  - IgnorePointer for badge to prevent touch blocking
+  - Cart icon easily tappable
+- ✅ **Product Detail Integration:**
+  - Add to Cart with full customization support
+  - CartBloc provided via BlocProvider.value
+  - Success feedback with "View Cart" action
+- ✅ **Cart Quantity Indicators (Builds #48-49):**
+  - Green badge on product cards showing quantity in cart
+  - Category chips show item count per category
+  - "All" category has no badge (clean)
+  - Real-time updates across all views
+- ✅ **Routing:**
+  - `/cart` route in GoRouter
+  - Navigation from menu and product detail
+
 ---
 
 ## 📁 Project Structure
@@ -98,15 +171,22 @@ lib/
 │   │   ├── menu_remote_datasource.dart # Menu & product APIs
 │   │   └── store_remote_datasource.dart # Store locator APIs
 │   ├── models/
+│   │   ├── cart_item_model.dart        # Cart models (CartItem, CartModifier, etc.)
+│   │   ├── combo_model.dart            # Combo activity models
 │   │   ├── menu_model.dart             # MenuCategory with subcategories
-│   │   ├── product_model.dart          # Product with secure URLs
+│   │   ├── product_model.dart          # Product with secure URLs & toJson
+│   │   ├── product_attribute_model.dart # Product attributes/modifiers
 │   │   ├── store_credentials_model.dart # API credentials
 │   │   └── store_info_model.dart       # Store information
 │   └── repositories/
+│       ├── cart_repository_impl.dart   # Cart persistence with SharedPreferences
 │       ├── menu_repository_impl.dart   # Menu repository with caching
 │       └── store_repository_impl.dart  # Store repository with caching
 ├── presentation/
 │   ├── bloc/
+│   │   ├── cart_bloc.dart              # Cart state management
+│   │   ├── cart_event.dart             # Cart events
+│   │   ├── cart_state.dart             # Cart states
 │   │   ├── menu_bloc.dart              # Menu state management
 │   │   ├── menu_event.dart             # Menu events
 │   │   ├── menu_state.dart             # Menu states
@@ -114,14 +194,15 @@ lib/
 │   │   ├── store_event.dart            # Store events
 │   │   └── store_state.dart            # Store states
 │   ├── pages/
+│   │   ├── cart_page.dart              # Cart UI with item management
 │   │   ├── home_page.dart              # Landing page
-│   │   ├── menu_page.dart              # Menu with categories & products
-│   │   ├── product_detail_page.dart    # Product details
+│   │   ├── menu_page.dart              # Menu with categories, products, cart badges
+│   │   ├── product_detail_page.dart    # Product details with modifiers & combos
 │   │   └── store_locator_page.dart     # Store information display
 │   └── widgets/
 │       └── web_safe_image.dart         # Image widget with error handling
-├── app.dart                            # GoRouter configuration
-└── main.dart                           # App entry point (Build #22)
+├── app.dart                            # GoRouter configuration with /cart route
+└── main.dart                           # App entry point (Build #49)
 ```
 
 ---
@@ -240,17 +321,27 @@ Home (/)
 | #20 | Subcategories | Hierarchical category support |
 | #21 | Auto-selection | Auto-select first subcategory |
 | #22 | Layout Fix | Fixed price visibility issue |
+| #23-37 | Product Modifiers | Attribute API, selection UI, validation |
+| #38-42 | Combo Products | Combo API, nested modifiers, categories |
+| #40 | Data Models | Documentation, tests, cache improvements |
+| #41 | Entry Flow | Auto-navigation, dynamic branding |
+| #42 | Modifier UI | Add Modifiers button, deselection |
+| #43-47 | Shopping Cart | Cart models, BLoC, UI, persistence, integration |
+| #44-47 | Cart Badge | AppBar badge positioning, touch fix |
+| #48 | Cart Indicators | Product & category quantity badges |
+| #49 | Badge Polish | Removed badge from "All" category |
 
 ---
 
 ## 🐛 Known Issues & Limitations
 
 ### Current Limitations
-1. **Cart functionality not implemented** - "Add" button shows snackbar only
-2. **Product modifiers not handled** - No combo products or customization
-3. **No payment integration** - Ordering flow incomplete
+1. ~~**Cart functionality not implemented**~~ - ✅ **COMPLETED** (Builds #43-49)
+2. ~~**Product modifiers not handled**~~ - ✅ **COMPLETED** (Builds #23-42)
+3. **No payment integration** - Checkout flow incomplete
 4. **No authentication** - User login/signup not implemented
 5. **No order history** - Past orders not tracked
+6. **Sales type selection** - Takeaway vs Dine-in not implemented
 
 ### CORS Notes
 - CORS issue with `oss.jeffy.sg` was **resolved by server team**
@@ -278,20 +369,26 @@ POST https://api.jeffy.sg/getProductByStore
 ## 🚀 Next Steps / TODO
 
 ### High Priority
-1. **Cart Implementation**
-   - Cart state management (BLoC)
-   - Add/remove products
-   - Quantity adjustment
-   - Cart page UI
-   - Persist cart in SharedPreferences
+1. ~~**Cart Implementation**~~ - ✅ **COMPLETED** (Builds #43-49)
+   - ✅ Cart state management (BLoC)
+   - ✅ Add/remove products
+   - ✅ Quantity adjustment
+   - ✅ Cart page UI
+   - ✅ Persist cart in SharedPreferences
+   - ✅ Cart badges and indicators
 
-2. **Product Modifiers & Combos**
-   - Parse modifier data from API
-   - Handle combo products
-   - Customization UI (similar to React app's modal approach)
-   - Price calculation with modifiers
+2. ~~**Product Modifiers & Combos**~~ - ✅ **COMPLETED** (Builds #23-42)
+   - ✅ Parse modifier data from API
+   - ✅ Handle combo products
+   - ✅ Customization UI in product detail page
+   - ✅ Price calculation with modifiers
 
-3. **Checkout Flow**
+3. **Sales Type Selection**
+   - Takeaway vs Dine-in selection
+   - Pickup time selection
+   - Store pickup vs delivery
+
+4. **Checkout Flow**
    - Order summary page
    - Payment method selection
    - Order submission API
@@ -334,12 +431,14 @@ POST https://api.jeffy.sg/getProductByStore
 - ✅ Product grid display
 - ✅ Hierarchical categories (parent/child)
 - ✅ Auto-select subcategory logic
+- ✅ **Product modifiers** (Builds #23-42)
+- ✅ **Combo products** (Builds #38-42)
+- ✅ **Cart management** (Builds #43-49)
+- ✅ **Product customization** (in product detail page)
 
 ### Still in React App (Not Migrated)
-- ❌ Cart management
-- ❌ Product customization modal
-- ❌ Combo product selection
-- ❌ Modifier selection
+- ❌ Sales type selection (Takeaway/Dine-in)
+- ❌ Pickup time selection
 - ❌ Checkout flow
 - ❌ Payment integration
 - ❌ User authentication
@@ -395,6 +494,11 @@ flutter analyze
 5. **Secure URLs by default:** All image URLs converted to HTTPS in model getters
 6. **Auto-select subcategories:** Better UX when parent categories are just containers
 7. **WebSafeImage widget:** Centralized image handling with consistent error states
+8. **Cart in product detail:** Full customization before adding to cart (vs quick add)
+9. **BlocProvider.value for navigation:** Provides CartBloc to ProductDetailPage via Navigator
+10. **Real-time cart indicators:** Product cards and categories show live cart quantities
+11. **IgnorePointer for badges:** Badges don't block touch events on underlying buttons
+12. **UUID for cart items:** Each cart item gets unique ID for tracking customizations
 
 ---
 
