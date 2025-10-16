@@ -16,8 +16,10 @@ abstract class SalesTypeState {
   bool get isSelectionComplete {
     if (selectedSalesType == null) return false;
 
-    // Dine-in is always complete (no schedule needed)
-    if (selectedSalesType == SalesType.dineIn) return true;
+    // Dine-in requires pager number
+    if (selectedSalesType == SalesType.dineIn) {
+      return pagerNumber != null && pagerNumber!.isNotEmpty;
+    }
 
     // Pickup requires schedule
     if (selectedSalesType == SalesType.pickup) return schedule != null;
