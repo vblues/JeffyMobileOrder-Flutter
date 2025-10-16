@@ -24,6 +24,13 @@ class ToggleASAP extends SalesTypeEvent {
   ToggleASAP(this.isASAP);
 }
 
+/// Set pager number for dine-in orders
+class SetPagerNumber extends SalesTypeEvent {
+  final String pagerNumber;
+
+  SetPagerNumber(this.pagerNumber);
+}
+
 /// Confirm and proceed to payment
 class ConfirmSalesType extends SalesTypeEvent {}
 

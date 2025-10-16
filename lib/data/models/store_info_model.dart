@@ -153,6 +153,20 @@ class StoreInfo {
     }
     return url;
   }
+
+  /// Get pager info from store_note
+  PagerInfo get pagerInfo {
+    try {
+      final note = storeNoteData;
+      final pagerData = note['Pager'] as Map<String, dynamic>?;
+      if (pagerData != null) {
+        return PagerInfo.fromJson(pagerData);
+      }
+      return PagerInfo(enabled: false);
+    } catch (e) {
+      return PagerInfo(enabled: false);
+    }
+  }
 }
 
 class PayTypeInfo {
@@ -212,5 +226,36 @@ class SaleTypeInfo {
       saleTypeName: json['sale_type_name'] as String? ?? '',
       saleTypeCode: json['sale_type_code'].toString(),
     );
+  }
+}
+
+/// Pager information for dine-in orders
+class PagerInfo {
+  final bool enabled;
+  final String? message;
+  final String? imageUrl;
+
+  PagerInfo({
+    required this.enabled,
+    this.message,
+    this.imageUrl,
+  });
+
+  factory PagerInfo.fromJson(Map<String, dynamic> json) {
+    return PagerInfo(
+      enabled: json['Enabled'] as bool? ?? false,
+      message: json['Message'] as String?,
+      imageUrl: json['Image'] as String?,
+    );
+  }
+
+  /// Get secure HTTPS image URL (convert HTTP to HTTPS)
+  String? get secureImageUrl {
+    final url = imageUrl;
+    if (url == null) return null;
+    if (url.startsWith('http://')) {
+      return url.replaceFirst('http://', 'https://');
+    }
+    return url;
   }
 }

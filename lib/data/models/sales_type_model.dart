@@ -145,10 +145,12 @@ class OrderSchedule {
 class SalesTypeSelection {
   final SalesType salesType;
   final OrderSchedule? schedule;
+  final String? pagerNumber; // For dine-in orders with pager enabled
 
   SalesTypeSelection({
     required this.salesType,
     this.schedule,
+    this.pagerNumber,
   });
 
   /// Check if selection is complete and valid
@@ -166,6 +168,7 @@ class SalesTypeSelection {
     return {
       'salesType': salesType.toApiValue(),
       'schedule': schedule?.toJson(),
+      'pagerNumber': pagerNumber,
     };
   }
 
@@ -175,16 +178,19 @@ class SalesTypeSelection {
       schedule: json['schedule'] != null
           ? OrderSchedule.fromJson(json['schedule'] as Map<String, dynamic>)
           : null,
+      pagerNumber: json['pagerNumber'] as String?,
     );
   }
 
   SalesTypeSelection copyWith({
     SalesType? salesType,
     OrderSchedule? schedule,
+    String? pagerNumber,
   }) {
     return SalesTypeSelection(
       salesType: salesType ?? this.salesType,
       schedule: schedule ?? this.schedule,
+      pagerNumber: pagerNumber ?? this.pagerNumber,
     );
   }
 }

@@ -9,6 +9,7 @@ class SalesTypeBloc extends Bloc<SalesTypeEvent, SalesTypeState> {
     on<SelectSalesType>(_onSelectSalesType);
     on<SetPickupTime>(_onSetPickupTime);
     on<ToggleASAP>(_onToggleASAP);
+    on<SetPagerNumber>(_onSetPagerNumber);
     on<ConfirmSalesType>(_onConfirmSalesType);
     on<ResetSalesType>(_onResetSalesType);
   }
@@ -58,6 +59,7 @@ class SalesTypeBloc extends Bloc<SalesTypeEvent, SalesTypeState> {
     emit(PickupTimeSelected(
       salesType: state.selectedSalesType!,
       schedule: schedule,
+      pagerNumber: state.pagerNumber,
     ));
   }
 
@@ -75,6 +77,7 @@ class SalesTypeBloc extends Bloc<SalesTypeEvent, SalesTypeState> {
       emit(SalesTypeSelected(
         salesType: state.selectedSalesType!,
         schedule: OrderSchedule.asap(),
+        pagerNumber: state.pagerNumber,
       ));
     } else {
       // Set to 30 minutes from now as default
@@ -82,8 +85,25 @@ class SalesTypeBloc extends Bloc<SalesTypeEvent, SalesTypeState> {
       emit(PickupTimeSelected(
         salesType: state.selectedSalesType!,
         schedule: OrderSchedule.scheduled(defaultTime),
+        pagerNumber: state.pagerNumber,
       ));
     }
+  }
+
+  /// Set pager number for dine-in orders
+  void _onSetPagerNumber(SetPagerNumber event, Emitter<SalesTypeState> emit) {
+    if (state.selectedSalesType == null) {
+      emit(SalesTypeError(
+        message: 'Please select a sales type first',
+      ));
+      return;
+    }
+
+    emit(PagerNumberSet(
+      salesType: state.selectedSalesType!,
+      pagerNumber: event.pagerNumber,
+      schedule: state.schedule,
+    ));
   }
 
   /// Confirm selection and proceed

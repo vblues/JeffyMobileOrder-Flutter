@@ -4,10 +4,12 @@ import '../../data/models/sales_type_model.dart';
 abstract class SalesTypeState {
   final SalesType? selectedSalesType;
   final OrderSchedule? schedule;
+  final String? pagerNumber;
 
   SalesTypeState({
     this.selectedSalesType,
     this.schedule,
+    this.pagerNumber,
   });
 
   /// Check if selection is complete
@@ -29,6 +31,7 @@ abstract class SalesTypeState {
     return SalesTypeSelection(
       salesType: selectedSalesType!,
       schedule: schedule,
+      pagerNumber: pagerNumber,
     );
   }
 }
@@ -43,7 +46,8 @@ class SalesTypeSelected extends SalesTypeState {
   SalesTypeSelected({
     required SalesType salesType,
     OrderSchedule? schedule,
-  }) : super(selectedSalesType: salesType, schedule: schedule);
+    String? pagerNumber,
+  }) : super(selectedSalesType: salesType, schedule: schedule, pagerNumber: pagerNumber);
 }
 
 /// Pickup time selected
@@ -51,7 +55,17 @@ class PickupTimeSelected extends SalesTypeState {
   PickupTimeSelected({
     required SalesType salesType,
     required OrderSchedule schedule,
-  }) : super(selectedSalesType: salesType, schedule: schedule);
+    String? pagerNumber,
+  }) : super(selectedSalesType: salesType, schedule: schedule, pagerNumber: pagerNumber);
+}
+
+/// Pager number set
+class PagerNumberSet extends SalesTypeState {
+  PagerNumberSet({
+    required SalesType salesType,
+    required String pagerNumber,
+    OrderSchedule? schedule,
+  }) : super(selectedSalesType: salesType, schedule: schedule, pagerNumber: pagerNumber);
 }
 
 /// Selection confirmed
@@ -63,6 +77,7 @@ class SalesTypeConfirmed extends SalesTypeState {
   }) : super(
           selectedSalesType: confirmedSelection.salesType,
           schedule: confirmedSelection.schedule,
+          pagerNumber: confirmedSelection.pagerNumber,
         );
 }
 
@@ -74,5 +89,6 @@ class SalesTypeError extends SalesTypeState {
     required this.message,
     SalesType? salesType,
     OrderSchedule? schedule,
-  }) : super(selectedSalesType: salesType, schedule: schedule);
+    String? pagerNumber,
+  }) : super(selectedSalesType: salesType, schedule: schedule, pagerNumber: pagerNumber);
 }
