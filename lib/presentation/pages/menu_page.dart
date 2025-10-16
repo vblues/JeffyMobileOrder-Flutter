@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../app.dart' as app;
 import '../../core/constants/storage_keys.dart';
 import '../../data/datasources/menu_remote_datasource.dart';
 import '../../data/models/combo_model.dart';
@@ -163,14 +164,47 @@ class _MenuPageView extends StatefulWidget {
   State<_MenuPageView> createState() => _MenuPageViewState();
 }
 
-class _MenuPageViewState extends State<_MenuPageView> {
+class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Subscribe to route observer
+    final modalRoute = ModalRoute.of(context);
+    if (modalRoute != null) {
+      app.routeObserver.subscribe(this, modalRoute);
+    }
+  }
+
+  @override
   void dispose() {
+    app.routeObserver.unsubscribe(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    // Called when a route has been popped and this route is now visible
+    // This is triggered when returning from CartPage
+    context.read<CartBloc>().add(LoadCart());
+  }
+
+  @override
+  void didPush() {
+    // Called when this route has been pushed
+  }
+
+  @override
+  void didPop() {
+    // Called when this route has been popped
+  }
+
+  @override
+  void didPushNext() {
+    // Called when a new route has been pushed on top of this route
   }
 
   @override

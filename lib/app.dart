@@ -6,6 +6,9 @@ import 'presentation/pages/menu_page.dart';
 import 'presentation/pages/cart_page.dart';
 import 'presentation/pages/sales_type_page.dart';
 
+// Global RouteObserver for navigation tracking
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
 class MobileOrderApp extends StatelessWidget {
   const MobileOrderApp({super.key});
 
@@ -27,6 +30,7 @@ class MobileOrderApp extends StatelessWidget {
 }
 
 final GoRouter _router = GoRouter(
+  observers: [routeObserver],
   initialLocation: '/',
   routes: [
     GoRoute(
