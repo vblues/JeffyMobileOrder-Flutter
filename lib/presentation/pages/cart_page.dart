@@ -437,13 +437,8 @@ class _CartPageView extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Navigate to checkout
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Checkout functionality coming soon!'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
+                    // Navigate to sales type selection
+                    context.push('/sales-type');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,

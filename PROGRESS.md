@@ -1,6 +1,6 @@
 # Mobile Order Flutter Web App - Development Progress
 
-**Last Updated:** Build #49 (2025-10-15)
+**Last Updated:** Build #53 (2025-10-16)
 **Project:** Flutter Web Mobile Ordering Application
 **Repository:** `/var/www/mobileorder.jeffy.sg`
 **Production URL:** `https://mobileorderuat.jeffy.sg`
@@ -154,6 +154,29 @@ A Flutter web application for mobile food ordering, designed to replace/compleme
   - `/cart` route in GoRouter
   - Navigation from menu and product detail
 
+### Phase 12: Sales Type Selection (Builds #50-53)
+- ✅ **Sales Type Models:**
+  - `SalesType` enum: dineIn, pickup (only 2 types)
+  - `OrderSchedule`: pickup time with ASAP support
+  - `SalesTypeSelection`: complete selection state
+- ✅ **Sales Type BLoC:**
+  - Events: SelectSalesType, SetPickupTime, ToggleASAP, ConfirmSalesType, ResetSalesType
+  - States: Initial, Selected, PickupTimeSelected, Confirmed, Error
+  - Validation for complete selection
+- ✅ **Sales Type Page UI:**
+  - Dine In option (no schedule needed)
+  - Pick-Up option with ASAP/scheduled time selection
+  - Time picker integration with validation
+  - "Continue to Payment" button
+- ✅ **Time Picker Features (Build #51):**
+  - Default to current time + 30 minutes
+  - Validates time is not in the past
+  - Shows error message for invalid times
+  - Handles minute overflow correctly
+- ✅ **Routing:**
+  - `/sales-type` route in GoRouter
+  - Navigation from cart checkout button
+
 ---
 
 ## 📁 Project Structure
@@ -176,6 +199,7 @@ lib/
 │   │   ├── menu_model.dart             # MenuCategory with subcategories
 │   │   ├── product_model.dart          # Product with secure URLs & toJson
 │   │   ├── product_attribute_model.dart # Product attributes/modifiers
+│   │   ├── sales_type_model.dart       # Sales type (Dine In, Pick-Up) models
 │   │   ├── store_credentials_model.dart # API credentials
 │   │   └── store_info_model.dart       # Store information
 │   └── repositories/
@@ -190,6 +214,9 @@ lib/
 │   │   ├── menu_bloc.dart              # Menu state management
 │   │   ├── menu_event.dart             # Menu events
 │   │   ├── menu_state.dart             # Menu states
+│   │   ├── sales_type_bloc.dart        # Sales type selection state management
+│   │   ├── sales_type_event.dart       # Sales type events
+│   │   ├── sales_type_state.dart       # Sales type states
 │   │   ├── store_bloc.dart             # Store state management
 │   │   ├── store_event.dart            # Store events
 │   │   └── store_state.dart            # Store states
@@ -198,11 +225,12 @@ lib/
 │   │   ├── home_page.dart              # Landing page
 │   │   ├── menu_page.dart              # Menu with categories, products, cart badges
 │   │   ├── product_detail_page.dart    # Product details with modifiers & combos
+│   │   ├── sales_type_page.dart        # Sales type selection (Dine In / Pick-Up)
 │   │   └── store_locator_page.dart     # Store information display
 │   └── widgets/
 │       └── web_safe_image.dart         # Image widget with error handling
-├── app.dart                            # GoRouter configuration with /cart route
-└── main.dart                           # App entry point (Build #49)
+├── app.dart                            # GoRouter configuration with routes
+└── main.dart                           # App entry point (Build #53)
 ```
 
 ---
@@ -330,6 +358,10 @@ Home (/)
 | #44-47 | Cart Badge | AppBar badge positioning, touch fix |
 | #48 | Cart Indicators | Product & category quantity badges |
 | #49 | Badge Polish | Removed badge from "All" category |
+| #50 | Sales Type | Sales type selection page (Dine In, Takeaway, Pick-Up) |
+| #51 | Time Picker | Fixed time picker default to +30min, validation |
+| #52 | Sales Type Order | Moved Dine In to first position |
+| #53 | Remove Takeaway | Only 2 sales types: Dine In and Pick-Up |
 
 ---
 
@@ -338,10 +370,10 @@ Home (/)
 ### Current Limitations
 1. ~~**Cart functionality not implemented**~~ - ✅ **COMPLETED** (Builds #43-49)
 2. ~~**Product modifiers not handled**~~ - ✅ **COMPLETED** (Builds #23-42)
-3. **No payment integration** - Checkout flow incomplete
-4. **No authentication** - User login/signup not implemented
-5. **No order history** - Past orders not tracked
-6. **Sales type selection** - Takeaway vs Dine-in not implemented
+3. ~~**Sales type selection**~~ - ✅ **COMPLETED** (Builds #50-53)
+4. **No payment integration** - Checkout flow incomplete
+5. **No authentication** - User login/signup not implemented
+6. **No order history** - Past orders not tracked
 
 ### CORS Notes
 - CORS issue with `oss.jeffy.sg` was **resolved by server team**
@@ -383,10 +415,11 @@ POST https://api.jeffy.sg/getProductByStore
    - ✅ Customization UI in product detail page
    - ✅ Price calculation with modifiers
 
-3. **Sales Type Selection**
-   - Takeaway vs Dine-in selection
-   - Pickup time selection
-   - Store pickup vs delivery
+3. ~~**Sales Type Selection**~~ - ✅ **COMPLETED** (Builds #50-53)
+   - ✅ Dine-in vs Pick-Up selection
+   - ✅ Pickup time selection with ASAP option
+   - ✅ Time picker with validation (not in past)
+   - ✅ Default to current time + 30 minutes
 
 4. **Checkout Flow**
    - Order summary page
@@ -437,13 +470,12 @@ POST https://api.jeffy.sg/getProductByStore
 - ✅ **Product customization** (in product detail page)
 
 ### Still in React App (Not Migrated)
-- ❌ Sales type selection (Takeaway/Dine-in)
-- ❌ Pickup time selection
 - ❌ Checkout flow
 - ❌ Payment integration
 - ❌ User authentication
 - ❌ Order history
 - ❌ Redeemable products
+- ❌ Table number selection
 
 ### React Code References
 - React app location: `/var/www/orderuat.jeffy.sg/src/`
