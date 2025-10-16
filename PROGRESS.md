@@ -1,6 +1,6 @@
 # Mobile Order Flutter Web App - Development Progress
 
-**Last Updated:** Build #53 (2025-10-16)
+**Last Updated:** Build #79 (2025-10-16)
 **Project:** Flutter Web Mobile Ordering Application
 **Repository:** `/var/www/mobileorder.jeffy.sg`
 **Production URL:** `https://mobileorderuat.jeffy.sg`
@@ -177,6 +177,34 @@ A Flutter web application for mobile food ordering, designed to replace/compleme
   - `/sales-type` route in GoRouter
   - Navigation from cart checkout button
 
+### Phase 13: Cart Badge Synchronization (Builds #54-79)
+- ✅ **Problem Identified:**
+  - Cart badges (cart icon, category chips, product cards) not clearing after "Clear All"
+  - Separate CartBloc instances in MenuPage and CartPage causing state desync
+  - URL entry points breaking with shared CartBloc approach
+- ✅ **Solutions Attempted:**
+  - Build #43-76: Tried shared CartBloc at app level (blocked URL entry points)
+  - Build #77: Reverted to separate CartBloc instances
+  - Build #78: Attempted didChangeDependencies (didn't work with GoRouter)
+- ✅ **Final Solution (Build #79):**
+  - **RouteObserver Pattern** implemented
+  - Global RouteObserver registered in GoRouter
+  - MenuPage implements RouteAware mixin
+  - `didPopNext()` callback reloads cart when returning from CartPage
+  - Separate CartBloc instances maintained (better for URL entry points)
+  - SharedPreferences remains single source of truth
+- ✅ **Technical Implementation:**
+  - `app.dart`: Global RouteObserver instance and registration
+  - `menu_page.dart`: RouteAware subscription and lifecycle hooks
+  - Cart reloads automatically when navigating back from cart page
+  - All badges (cart icon, category chips, product cards) update correctly
+- ✅ **Benefits of Approach:**
+  - URL entry points work without blocking (critical for QR codes)
+  - Simple app architecture without FutureBuilder at root
+  - Clean separation of concerns per page
+  - Standard Flutter navigation pattern
+  - Minimal performance overhead
+
 ---
 
 ## 📁 Project Structure
@@ -223,14 +251,14 @@ lib/
 │   ├── pages/
 │   │   ├── cart_page.dart              # Cart UI with item management
 │   │   ├── home_page.dart              # Landing page
-│   │   ├── menu_page.dart              # Menu with categories, products, cart badges
+│   │   ├── menu_page.dart              # Menu with RouteAware for cart sync
 │   │   ├── product_detail_page.dart    # Product details with modifiers & combos
 │   │   ├── sales_type_page.dart        # Sales type selection (Dine In / Pick-Up)
 │   │   └── store_locator_page.dart     # Store information display
 │   └── widgets/
 │       └── web_safe_image.dart         # Image widget with error handling
-├── app.dart                            # GoRouter configuration with routes
-└── main.dart                           # App entry point (Build #53)
+├── app.dart                            # GoRouter + RouteObserver (Build #79)
+└── main.dart                           # App entry point
 ```
 
 ---
@@ -362,6 +390,10 @@ Home (/)
 | #51 | Time Picker | Fixed time picker default to +30min, validation |
 | #52 | Sales Type Order | Moved Dine In to first position |
 | #53 | Remove Takeaway | Only 2 sales types: Dine In and Pick-Up |
+| #54-76 | Cart Sync Attempts | Various approaches to fix badge clearing issue |
+| #77 | Revert to Separate | Reverted to separate CartBloc instances |
+| #78 | didChangeDependencies | Attempted lifecycle hook (didn't work) |
+| #79 | RouteObserver Fix | **Final solution: RouteObserver pattern for cart sync** |
 
 ---
 
@@ -371,9 +403,10 @@ Home (/)
 1. ~~**Cart functionality not implemented**~~ - ✅ **COMPLETED** (Builds #43-49)
 2. ~~**Product modifiers not handled**~~ - ✅ **COMPLETED** (Builds #23-42)
 3. ~~**Sales type selection**~~ - ✅ **COMPLETED** (Builds #50-53)
-4. **No payment integration** - Checkout flow incomplete
-5. **No authentication** - User login/signup not implemented
-6. **No order history** - Past orders not tracked
+4. ~~**Cart badges not clearing**~~ - ✅ **COMPLETED** (Build #79)
+5. **No payment integration** - Checkout flow incomplete
+6. **No authentication** - User login/signup not implemented
+7. **No order history** - Past orders not tracked
 
 ### CORS Notes
 - CORS issue with `oss.jeffy.sg` was **resolved by server team**
@@ -531,6 +564,8 @@ flutter analyze
 10. **Real-time cart indicators:** Product cards and categories show live cart quantities
 11. **IgnorePointer for badges:** Badges don't block touch events on underlying buttons
 12. **UUID for cart items:** Each cart item gets unique ID for tracking customizations
+13. **RouteObserver pattern:** MenuPage reloads cart when returning from CartPage (Build #79)
+14. **Separate CartBloc per page:** Better for URL entry points than shared global state
 
 ---
 
