@@ -17,6 +17,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<UpdateCartItemQuantity>(_onUpdateCartItemQuantity);
     on<ClearCart>(_onClearCart);
     on<RefreshCart>(_onRefreshCart);
+    on<ValidateCartStore>(_onValidateCartStore);
   }
 
   /// Load cart from storage
@@ -26,6 +27,14 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         items: state.items,
         summary: state.summary,
       ));
+
+      // Validate cart belongs to current store before loading
+      if (!_repository.isCartValidForCurrentStore()) {
+        // Cart belongs to a different store, clear it
+        await _repository.clearCart();
+        emit(CartCleared());
+        return;
+      }
 
       final items = await _repository.loadCart();
       final summary = _calculateSummary(items);
@@ -47,12 +56,12 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       final List<CartModifier> cartModifiers = [];
       event.selectedModifiers.forEach((attId, values) {
         for (final value in values) {
-          final attribute = event.product.productId; // We need attribute name
-          cartModifiers.add(CartModifier.fromAttributeValue(
+          final modifier = CartModifier.fromAttributeValue(
             attId,
             'Modifier $attId', // Attribute name - will be overridden by UI context
             value,
-          ));
+          );
+          cartModifiers.add(modifier);
         }
       });
 
@@ -60,7 +69,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       final List<CartComboItem> cartComboItems = [];
       event.selectedCombos.forEach((category, items) {
         for (final item in items) {
-          cartComboItems.add(CartComboItem.fromSelectedComboItem(item));
+          final comboItem = CartComboItem.fromSelectedComboItem(item);
+          cartComboItems.add(comboItem);
         }
       });
 
@@ -75,17 +85,19 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
       // Add to cart
       final updatedItems = List<CartItem>.from(state.items)..add(cartItem);
+
       final summary = _calculateSummary(updatedItems);
 
-      // Save to storage
-      await _repository.saveCart(updatedItems);
+      // Save to storage with current store ID
+      final currentStoreId = _repository.getCurrentStoreId();
+      await _repository.saveCart(updatedItems, storeId: currentStoreId);
 
       emit(CartItemAdded(
         addedItem: cartItem,
         items: updatedItems,
         summary: summary,
       ));
-    } catch (e) {
+    } catch (e, stackTrace) {
       emit(CartError(
         message: 'Failed to add item to cart: $e',
         items: state.items,
@@ -103,8 +115,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           .toList();
       final summary = _calculateSummary(updatedItems);
 
-      // Save to storage
-      await _repository.saveCart(updatedItems);
+      // Save to storage with current store ID
+      final currentStoreId = _repository.getCurrentStoreId();
+      await _repository.saveCart(updatedItems, storeId: currentStoreId);
 
       emit(CartItemRemoved(
         removedItemId: event.cartItemId,
@@ -137,8 +150,9 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
       final summary = _calculateSummary(updatedItems);
 
-      // Save to storage
-      await _repository.saveCart(updatedItems);
+      // Save to storage with current store ID
+      final currentStoreId = _repository.getCurrentStoreId();
+      await _repository.saveCart(updatedItems, storeId: currentStoreId);
 
       emit(CartItemUpdated(
         updatedItemId: event.cartItemId,
@@ -174,6 +188,24 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       RefreshCart event, Emitter<CartState> emit) async {
     final summary = _calculateSummary(state.items);
     emit(CartLoaded(items: state.items, summary: summary));
+  }
+
+  /// Validate cart belongs to current store
+  Future<void> _onValidateCartStore(
+      ValidateCartStore event, Emitter<CartState> emit) async {
+    try {
+      if (!_repository.isCartValidForCurrentStore()) {
+        // Cart belongs to a different store, clear it
+        await _repository.clearCart();
+        emit(CartCleared());
+      }
+    } catch (e) {
+      emit(CartError(
+        message: 'Failed to validate cart: $e',
+        items: state.items,
+        summary: state.summary,
+      ));
+    }
   }
 
   /// Calculate cart summary

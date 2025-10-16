@@ -332,14 +332,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                     ),
                                     duration: const Duration(seconds: 2),
                                     backgroundColor: Colors.green,
-                                    action: SnackBarAction(
-                                      label: 'View Cart',
-                                      textColor: Colors.white,
-                                      onPressed: () {
-                                        context.pop();
-                                        context.push('/cart');
-                                      },
-                                    ),
                                   ),
                                 );
 

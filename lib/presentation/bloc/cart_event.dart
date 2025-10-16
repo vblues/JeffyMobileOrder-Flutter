@@ -47,3 +47,6 @@ class ClearCart extends CartEvent {}
 
 /// Refresh cart (recalculate totals)
 class RefreshCart extends CartEvent {}
+
+/// Validate cart belongs to current store and clear if not
+class ValidateCartStore extends CartEvent {}

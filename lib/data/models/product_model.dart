@@ -13,7 +13,7 @@ class ProductResponse {
 
   factory ProductResponse.fromJson(Map<String, dynamic> json) {
     return ProductResponse(
-      resultCode: json['result_code'] as int? ?? 0,
+      resultCode: Product._parseIntWithDefault(json['result_code'], 0),
       products: (json['products'] as List<dynamic>?)
               ?.map((e) => Product.fromJson(e as Map<String, dynamic>))
               .toList() ??
@@ -68,25 +68,39 @@ class Product {
 
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
-      status: json['status'] as int? ?? 0,
-      cid: json['cid'] as int? ?? 0,
-      cateId: json['cate_id'] as int? ?? 0,
+      status: _parseIntWithDefault(json['status'], 0),
+      cid: _parseIntWithDefault(json['cid'], 0),
+      cateId: _parseIntWithDefault(json['cate_id'], 0),
       productPic: json['product_pic'] as String?,
-      productId: json['product_id'] as int? ?? 0,
+      productId: _parseIntWithDefault(json['product_id'], 0),
       productName: json['product_name'] as String? ?? '{}',
       note: json['note'] as String?,
       productSn: json['product_sn'] as String? ?? '',
-      isTakeOut: json['is_take_out'] as int? ?? 0,
+      isTakeOut: _parseIntWithDefault(json['is_take_out'], 0),
       price: json['price'] as String? ?? '0.00',
-      sortSn: json['sort_sn'] as int? ?? 0,
+      sortSn: _parseIntWithDefault(json['sort_sn'], 0),
       startTime: json['start_time'] as String? ?? '00:00:00',
       endTime: json['end_time'] as String? ?? '23:59:59',
       ingredientName: json['ingredient_name'] as String? ?? '{}',
-      ingredientsId: json['ingredients_id'] as int? ?? 0,
-      effectiveStartTime: json['effective_start_time'] as int? ?? 0,
-      effectiveEndTime: json['effective_end_time'] as int? ?? 0,
-      hasModifiers: json['hasModifiers'] as int? ?? 0,
+      ingredientsId: _parseIntWithDefault(json['ingredients_id'], 0),
+      effectiveStartTime: _parseIntWithDefault(json['effective_start_time'], 0),
+      effectiveEndTime: _parseIntWithDefault(json['effective_end_time'], 0),
+      hasModifiers: _parseIntWithDefault(json['hasModifiers'], 0),
     );
+  }
+
+  /// Helper to parse int from dynamic value with default (handles both int and String)
+  static int _parseIntWithDefault(dynamic value, int defaultValue) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is String) {
+      try {
+        return int.parse(value);
+      } catch (e) {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
   }
 
   /// Parse product_name JSON string and get English name
@@ -201,11 +215,12 @@ class Product {
 
   /// Get secure HTTPS product image URL (convert HTTP to HTTPS)
   String? get secureProductPic {
-    if (productPic == null) return null;
-    if (productPic!.startsWith('http://')) {
-      return productPic!.replaceFirst('http://', 'https://');
+    final pic = productPic;
+    if (pic == null) return null;
+    if (pic.startsWith('http://')) {
+      return pic.replaceFirst('http://', 'https://');
     }
-    return productPic;
+    return pic;
   }
 
   /// Convert to JSON

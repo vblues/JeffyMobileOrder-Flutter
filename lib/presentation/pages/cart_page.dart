@@ -170,6 +170,8 @@ class _CartPageView extends StatelessWidget {
   }
 
   Widget _buildCartItemCard(BuildContext context, CartItem cartItem) {
+    final productPic = cartItem.product.secureProductPic;
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -183,9 +185,9 @@ class _CartPageView extends StatelessWidget {
                 // Product image
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
-                  child: cartItem.product.secureProductPic != null
+                  child: productPic != null
                       ? WebSafeImage(
-                          imageUrl: cartItem.product.secureProductPic!,
+                          imageUrl: productPic,
                           width: 80,
                           height: 80,
                           fit: BoxFit.cover,

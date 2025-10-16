@@ -54,21 +54,35 @@ class ComboActivity {
 
   factory ComboActivity.fromJson(Map<String, dynamic> json) {
     return ComboActivity(
-      activityComboId: json['activity_combo_id'] as int? ?? 0,
+      activityComboId: _parseIntWithDefault(json['activity_combo_id'], 0),
       activitySn: json['activity_sn'] as String? ?? '',
       activityName: json['activity_name'] as String? ?? '{}',
       activityPic: json['activity_pic'] as String? ?? '',
       discountSn: json['discount_sn'] as String? ?? '',
-      discountType: json['discount_type'] as int? ?? 0,
+      discountType: _parseIntWithDefault(json['discount_type'], 0),
       discountNum: json['discount_num'] as String? ?? '0.00',
-      startTime: json['start_time'] as int? ?? 0,
-      endTime: json['end_time'] as int? ?? 0,
+      startTime: _parseIntWithDefault(json['start_time'], 0),
+      endTime: _parseIntWithDefault(json['end_time'], 0),
       actCycleDaytime: json['act_cycle_daytime'] as String? ?? '',
       categories: (json['cdata'] as List<dynamic>?)
               ?.map((e) => ComboCategory.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
     );
+  }
+
+  /// Helper to parse int from dynamic value with default (handles both int and String)
+  static int _parseIntWithDefault(dynamic value, int defaultValue) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is String) {
+      try {
+        return int.parse(value);
+      } catch (e) {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
   }
 
   /// Get activity name in English
@@ -123,17 +137,17 @@ class ComboCategory {
   factory ComboCategory.fromJson(Map<String, dynamic> json) {
     return ComboCategory(
       typeName: json['type_name'] as String? ?? '{}',
-      minNum: json['min_num'] as int? ?? 0,
-      maxNum: json['max_num'] as int? ?? 1,
+      minNum: ComboActivity._parseIntWithDefault(json['min_num'], 0),
+      maxNum: ComboActivity._parseIntWithDefault(json['max_num'], 1),
       typeNameSn: json['type_name_sn'] as String? ?? '',
-      isChoice: json['is_choice'] as int? ?? 0,
-      sort: json['sort'] as int? ?? 0,
+      isChoice: ComboActivity._parseIntWithDefault(json['is_choice'], 0),
+      sort: ComboActivity._parseIntWithDefault(json['sort'], 0),
       productIds: (json['product_id'] as List<dynamic>?)
               ?.map((e) => ComboProductInfo.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       defaultIds: (json['default_id'] as List<dynamic>?)
-              ?.map((e) => e as int)
+              ?.map((e) => ComboActivity._parseIntWithDefault(e, 0))
               .toList() ??
           [],
     );
@@ -192,7 +206,7 @@ class ComboProductInfo {
 
   factory ComboProductInfo.fromJson(Map<String, dynamic> json) {
     return ComboProductInfo(
-      productId: json['product_id'] as int? ?? 0,
+      productId: ComboActivity._parseIntWithDefault(json['product_id'], 0),
       productPrice: json['product_price'] as String? ?? '0.00',
     );
   }
@@ -256,9 +270,9 @@ class SelectedComboItem {
 
   factory SelectedComboItem.fromJson(Map<String, dynamic> json) {
     return SelectedComboItem(
-      categoryTypeNameSn: json['categoryTypeNameSn'] as int? ?? 0,
+      categoryTypeNameSn: ComboActivity._parseIntWithDefault(json['categoryTypeNameSn'], 0),
       categoryName: json['categoryName'] as String? ?? '',
-      productId: json['productId'] as int? ?? 0,
+      productId: ComboActivity._parseIntWithDefault(json['productId'], 0),
       productName: json['productName'] as String? ?? '',
       priceAdjustment: (json['priceAdjustment'] as num?)?.toDouble() ?? 0.0,
       modifiers: (json['modifiers'] as List<dynamic>?)
@@ -313,9 +327,9 @@ class ComboModifier {
 
   factory ComboModifier.fromJson(Map<String, dynamic> json) {
     return ComboModifier(
-      attId: json['attId'] as int,
+      attId: ComboActivity._parseIntWithDefault(json['attId'], 0),
       attName: json['attName'] as String,
-      attValId: json['attValId'] as int,
+      attValId: ComboActivity._parseIntWithDefault(json['attValId'], 0),
       attValName: json['attValName'] as String,
       attValSn: json['attValSn'] as String,
       price: (json['price'] as num).toDouble(),

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'product_model.dart';
 import 'product_attribute_model.dart';
 import 'combo_model.dart';
@@ -81,22 +80,46 @@ class CartItem {
 
   /// Create from JSON
   factory CartItem.fromJson(Map<String, dynamic> json) {
+    final id = json['id'] as String;
+    final product = Product.fromJson(json['product'] as Map<String, dynamic>);
+    final quantity = _parseIntWithDefault(json['quantity'], 1);
+
+    final modifiers = (json['modifiers'] as List<dynamic>?)
+            ?.map((m) => CartModifier.fromJson(m as Map<String, dynamic>))
+            .toList() ??
+        [];
+
+    final comboItems = (json['comboItems'] as List<dynamic>?)
+            ?.map((c) => CartComboItem.fromJson(c as Map<String, dynamic>))
+            .toList() ??
+        [];
+
+    final addedAt = json['addedAt'] != null
+        ? DateTime.parse(json['addedAt'] as String)
+        : DateTime.now();
+
     return CartItem(
-      id: json['id'] as String,
-      product: Product.fromJson(json['product'] as Map<String, dynamic>),
-      quantity: json['quantity'] as int? ?? 1,
-      modifiers: (json['modifiers'] as List<dynamic>?)
-              ?.map((m) => CartModifier.fromJson(m as Map<String, dynamic>))
-              .toList() ??
-          [],
-      comboItems: (json['comboItems'] as List<dynamic>?)
-              ?.map((c) => CartComboItem.fromJson(c as Map<String, dynamic>))
-              .toList() ??
-          [],
-      addedAt: json['addedAt'] != null
-          ? DateTime.parse(json['addedAt'] as String)
-          : DateTime.now(),
+      id: id,
+      product: product,
+      quantity: quantity,
+      modifiers: modifiers,
+      comboItems: comboItems,
+      addedAt: addedAt,
     );
+  }
+
+  /// Helper to parse int from dynamic value with default (handles both int and String)
+  static int _parseIntWithDefault(dynamic value, int defaultValue) {
+    if (value == null) return defaultValue;
+    if (value is int) return value;
+    if (value is String) {
+      try {
+        return int.parse(value);
+      } catch (e) {
+        return defaultValue;
+      }
+    }
+    return defaultValue;
   }
 
   @override
@@ -158,13 +181,20 @@ class CartModifier {
 
   factory CartModifier.fromJson(Map<String, dynamic> json) {
     return CartModifier(
-      attId: json['attId'] as int,
+      attId: _parseInt(json['attId']),
       attName: json['attName'] as String,
-      attValId: json['attValId'] as int,
+      attValId: _parseInt(json['attValId']),
       attValName: json['attValName'] as String,
       attValSn: json['attValSn'] as String,
       price: (json['price'] as num).toDouble(),
     );
+  }
+
+  /// Helper to parse int from dynamic value (handles both int and String)
+  static int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.parse(value);
+    throw FormatException('Cannot parse int from $value');
   }
 
   @override
@@ -232,17 +262,26 @@ class CartComboItem {
   }
 
   factory CartComboItem.fromJson(Map<String, dynamic> json) {
+    final modifiers = (json['modifiers'] as List<dynamic>?)
+            ?.map((m) => CartModifier.fromJson(m as Map<String, dynamic>))
+            .toList() ??
+        [];
+
     return CartComboItem(
-      categoryTypeNameSn: json['categoryTypeNameSn'] as int,
+      categoryTypeNameSn: _parseInt(json['categoryTypeNameSn']),
       categoryName: json['categoryName'] as String,
-      productId: json['productId'] as int,
+      productId: _parseInt(json['productId']),
       productName: json['productName'] as String,
       priceAdjustment: (json['priceAdjustment'] as num).toDouble(),
-      modifiers: (json['modifiers'] as List<dynamic>?)
-              ?.map((m) => CartModifier.fromJson(m as Map<String, dynamic>))
-              .toList() ??
-          [],
+      modifiers: modifiers,
     );
+  }
+
+  /// Helper to parse int from dynamic value (handles both int and String)
+  static int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.parse(value);
+    throw FormatException('Cannot parse int from $value');
   }
 
   @override
