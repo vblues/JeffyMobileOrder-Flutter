@@ -11,4 +11,5 @@ class StorageKeys {
   static const String productAtt = 'PRODUCT_ATT';
   static const String comboActivities = 'COMBO_ACTIVITIES';
   static const String comboProducts = 'COMBO_PRODUCTS';
+  static const String salesTypeSelection = 'SALES_TYPE_SELECTION';
 }

@@ -13,7 +13,7 @@ class ApiConstants {
   static const String userLogin = 'api/user/userLogin';
   static const String userRegister = 'api/user/userRegister';
   static const String getOtp = 'api/user/getOTP';
-  static const String syncMobileOrder = 'api/mobile/sendMobileOrder';
+  static const String sendMobileOrder = 'api/mobile/sendMobileOrder';
   static const String paymentUpdate = 'api/mobile/paymentUpdate';
   static const String getTnc = 'api/mobile/getTNC';
   static const String getPrivacyPolicy = 'api/mobile/getPrivacyPolicy';

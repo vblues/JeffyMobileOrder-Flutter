@@ -5,6 +5,7 @@ import 'presentation/pages/store_locator_page.dart';
 import 'presentation/pages/menu_page.dart';
 import 'presentation/pages/cart_page.dart';
 import 'presentation/pages/sales_type_page.dart';
+import 'presentation/pages/payment_page.dart';
 
 // Global RouteObserver for navigation tracking
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
@@ -56,11 +57,10 @@ final GoRouter _router = GoRouter(
       path: '/sales-type',
       builder: (context, state) => const SalesTypePage(),
     ),
-    // TODO: Add payment route in Phase 13
-    // GoRoute(
-    //   path: '/payment',
-    //   builder: (context, state) => const PaymentPage(),
-    // ),
+    GoRoute(
+      path: '/payment',
+      builder: (context, state) => const PaymentPage(),
+    ),
     // TODO: Add table service route in Phase 2
     // GoRoute(
     //   path: '/locate/:storeId/:sessionId',

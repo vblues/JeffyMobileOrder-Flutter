@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/constants/storage_keys.dart';
 import '../../data/models/sales_type_model.dart';
 import 'sales_type_event.dart';
 import 'sales_type_state.dart';
@@ -107,7 +110,7 @@ class SalesTypeBloc extends Bloc<SalesTypeEvent, SalesTypeState> {
   }
 
   /// Confirm selection and proceed
-  void _onConfirmSalesType(ConfirmSalesType event, Emitter<SalesTypeState> emit) {
+  Future<void> _onConfirmSalesType(ConfirmSalesType event, Emitter<SalesTypeState> emit) async {
     if (!state.isSelectionComplete) {
       emit(SalesTypeError(
         message: 'Please complete your selection',
@@ -118,6 +121,23 @@ class SalesTypeBloc extends Bloc<SalesTypeEvent, SalesTypeState> {
     }
 
     final selection = state.selection!;
+
+    // Save to SharedPreferences
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+        StorageKeys.salesTypeSelection,
+        json.encode(selection.toJson()),
+      );
+    } catch (e) {
+      emit(SalesTypeError(
+        message: 'Failed to save selection: $e',
+        salesType: state.selectedSalesType,
+        schedule: state.schedule,
+      ));
+      return;
+    }
+
     emit(SalesTypeConfirmed(confirmedSelection: selection));
   }
 

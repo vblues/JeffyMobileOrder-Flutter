@@ -586,18 +586,43 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
         // Wait for the refresh to complete
         await Future.delayed(const Duration(milliseconds: 500));
       },
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.52,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 20,
-        ),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          final product = products[index];
-          return _buildProductCard(context, product);
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Responsive grid: 2 columns on mobile, 3+ on larger screens
+          final crossAxisCount = constraints.maxWidth > 900
+              ? 4
+              : constraints.maxWidth > 600
+                  ? 3
+                  : 2;
+
+          // Fixed card height calculation to match _buildProductCard:
+          // Card height = imageWidth + detailsHeight
+          // detailsHeight = 160px (24 padding + 60 name + 14 spacing + 24 price + 38 button)
+          // Aspect ratio = W / (W + 160)
+          // For mobile (W≈170): 170/(170+160) = 0.515
+          // For tablet (W≈230): 230/(230+160) = 0.590
+          // For desktop (W≈200): 200/(200+160) = 0.556
+          const detailsHeight = 160.0;
+
+          // Calculate width per item
+          final totalSpacing = 16.0 * (crossAxisCount - 1) + 32.0; // crossSpacing + horizontal padding
+          final itemWidth = (constraints.maxWidth - totalSpacing) / crossAxisCount;
+          final aspectRatio = itemWidth / (itemWidth + detailsHeight);
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: aspectRatio,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 20,
+            ),
+            itemCount: products.length,
+            itemBuilder: (context, index) {
+              final product = products[index];
+              return _buildProductCard(context, product);
+            },
+          );
         },
       ),
     );
@@ -633,186 +658,212 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      child: InkWell(
-        onTap: () {
-          // Get CartBloc from parent context
-          final cartBloc = context.read<CartBloc>();
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Fixed dimensions for card sections
+          final imageSize = constraints.maxWidth; // Square image
+          const nameHeight = 60.0; // Fixed height for 3 lines of text (14px * 1.3 line height * 3 lines + padding)
+          const priceHeight = 24.0; // Fixed height for price row
+          const buttonHeight = 38.0; // Fixed height for button
+          const verticalPadding = 12.0 * 2; // Top and bottom padding
+          const verticalSpacing = 6.0 + 8.0; // Spacing between elements
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => BlocProvider.value(
-                value: cartBloc,
-                child: ProductDetailPage(
-                  product: product,
-                  attributes: attributes,
-                  comboCategories: comboCategories,
-                  comboProductsMap: comboProductsMap,
-                  productAttributesMap: productAttributesMap,
-                ),
-              ),
-            ),
-          );
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Product image with cart quantity badge
-            AspectRatio(
-              aspectRatio: 1.0,
-              child: Stack(
-                children: [
-                  // Product image
-                  product.secureProductPic != null
-                      ? WebSafeImage(
-                          imageUrl: product.secureProductPic!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                        )
-                      : Container(
-                          color: Colors.grey[200],
-                          child: const Icon(Icons.restaurant, size: 48),
-                        ),
-                  // Cart quantity badge
-                  if (quantityInCart > 0)
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.shopping_cart,
-                              color: Colors.white,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              quantityInCart.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+          // Total details section height
+          const detailsHeight = verticalPadding + nameHeight + verticalSpacing + priceHeight + buttonHeight;
+
+          return SizedBox(
+            height: imageSize + detailsHeight, // Fixed total height
+            child: InkWell(
+              onTap: () {
+                // Get CartBloc from parent context
+                final cartBloc = context.read<CartBloc>();
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BlocProvider.value(
+                      value: cartBloc,
+                      child: ProductDetailPage(
+                        product: product,
+                        attributes: attributes,
+                        comboCategories: comboCategories,
+                        comboProductsMap: comboProductsMap,
+                        productAttributesMap: productAttributesMap,
                       ),
                     ),
-                ],
-              ),
-            ),
-            // Product details section
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+                  ),
+                );
+              },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Product name - Fixed height to accommodate 2 lines
+                  // Product image with cart quantity badge - FIXED HEIGHT
                   SizedBox(
-                    height: 42,
-                    child: Text(
-                      product.productNameEn,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        height: 1.4,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(height: 22),
-                  // Product price - Always visible
-                  SizedBox(
-                    height: 24,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    width: imageSize,
+                    height: imageSize, // Square image
+                    child: Stack(
                       children: [
-                        Text(
-                          product.formattedPrice,
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                        if (!product.isTakeOutAvailable)
-                          Icon(
-                            Icons.dining,
-                            size: 16,
-                            color: Colors.grey[600],
+                        // Product image
+                        product.secureProductPic != null
+                            ? WebSafeImage(
+                                imageUrl: product.secureProductPic!,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                height: double.infinity,
+                              )
+                            : Container(
+                                color: Colors.grey[200],
+                                child: const Icon(Icons.restaurant, size: 48),
+                              ),
+                        // Cart quantity badge
+                        if (quantityInCart > 0)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.shopping_cart,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    quantityInCart.toString(),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  // Add to cart button - Always visible
+                  // Product details section - FIXED HEIGHT
                   SizedBox(
-                    width: double.infinity,
-                    height: 32,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Get CartBloc from parent context
-                        final cartBloc = context.read<CartBloc>();
+                    height: detailsHeight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Product name - FIXED HEIGHT for 3 lines
+                          SizedBox(
+                            height: nameHeight,
+                            child: Text(
+                              product.productNameEn,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                height: 1.3,
+                              ),
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          // Product price with icon - FIXED HEIGHT
+                          SizedBox(
+                            height: priceHeight,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    product.formattedPrice,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                                if (!product.isTakeOutAvailable)
+                                  Icon(
+                                    Icons.dining,
+                                    size: 18,
+                                    color: Colors.grey[600],
+                                  ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          // Add to cart button - FIXED HEIGHT
+                          SizedBox(
+                            width: double.infinity,
+                            height: buttonHeight,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                // Get CartBloc from parent context
+                                final cartBloc = context.read<CartBloc>();
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => BlocProvider.value(
-                              value: cartBloc,
-                              child: ProductDetailPage(
-                                product: product,
-                                attributes: attributes,
-                                comboCategories: comboCategories,
-                                comboProductsMap: comboProductsMap,
-                                productAttributesMap: productAttributesMap,
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BlocProvider.value(
+                                      value: cartBloc,
+                                      child: ProductDetailPage(
+                                        product: product,
+                                        attributes: attributes,
+                                        comboCategories: comboCategories,
+                                        comboProductsMap: comboProductsMap,
+                                        productAttributesMap: productAttributesMap,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text(
+                                'Add',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                      child: const Text(
-                        'Add',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
       },
