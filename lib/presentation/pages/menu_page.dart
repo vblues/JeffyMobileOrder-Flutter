@@ -426,14 +426,36 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
 
     return BlocBuilder<CartBloc, CartState>(
       builder: (context, cartState) {
-        // Calculate cart items per category
+        // Calculate cart items per category (including all subcategories)
         int getCategoryCartCount(int categoryId) {
+          // Find the category
+          final category = parentCategories.firstWhere(
+            (cat) => cat.id == categoryId,
+            orElse: () => parentCategories.first,
+          );
+
+          // Get product IDs from this category
           final categoryProductIds = state.allProducts
               .where((p) => p.cateId == categoryId)
               .map((p) => p.productId)
               .toSet();
+
+          // Get product IDs from all subcategories
+          final subcategoryProductIds = <int>{};
+          for (final subcategory in category.child) {
+            subcategoryProductIds.addAll(
+              state.allProducts
+                  .where((p) => p.cateId == subcategory.id)
+                  .map((p) => p.productId)
+            );
+          }
+
+          // Combine all product IDs
+          final allProductIds = {...categoryProductIds, ...subcategoryProductIds};
+
+          // Count cart items for all these products
           return cartState.items
-              .where((item) => categoryProductIds.contains(item.product.productId))
+              .where((item) => allProductIds.contains(item.product.productId))
               .fold(0, (sum, item) => sum + item.quantity);
         }
 
