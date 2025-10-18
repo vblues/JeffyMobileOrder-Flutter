@@ -21,6 +21,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     on<SelectCategory>(_onSelectCategory);
     on<RefreshMenu>(_onRefreshMenu);
     on<SearchProducts>(_onSearchProducts);
+    on<ToggleSubcategoryBar>(_onToggleSubcategoryBar);
   }
 
   /// Handle LoadMenu event
@@ -161,6 +162,24 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
 
       emit(currentState.copyWith(
         searchQuery: event.query,
+      ));
+    }
+  }
+
+  /// Handle ToggleSubcategoryBar event
+  void _onToggleSubcategoryBar(ToggleSubcategoryBar event, Emitter<MenuState> emit) {
+    if (state is MenuLoaded) {
+      final currentState = state as MenuLoaded;
+
+      // If clicking the same parent category, collapse it (set to null)
+      // If clicking a different parent category, expand it
+      // If event.parentCategoryId is null, collapse all
+      final newExpandedId = currentState.expandedParentCategoryId == event.parentCategoryId
+          ? null
+          : event.parentCategoryId;
+
+      emit(currentState.copyWith(
+        expandedParentCategoryId: newExpandedId,
       ));
     }
   }

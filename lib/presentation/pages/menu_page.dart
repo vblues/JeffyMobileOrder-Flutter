@@ -400,6 +400,11 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                 // Parent category chips (now act as bookmarks)
                 _buildCategoryChips(context, state),
                 const Divider(height: 1),
+                // Subcategory bar (expandable/collapsible)
+                _buildSubcategoryBar(context, state),
+                // Divider only shown when subcategories are visible
+                if (state.expandedSubcategories.isNotEmpty)
+                  const Divider(height: 1),
                 // Product grid with all categories
                 Expanded(
                   child: _buildAllCategoriesView(context, state),
@@ -439,12 +444,13 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             children: [
-              // "All" category - scrolls to top
+              // "All" category - scrolls to top and collapses subcategories
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: OutlinedButton(
                   onPressed: () {
                     _scrollToCategory(null);
+                    context.read<MenuBloc>().add(ToggleSubcategoryBar(null));
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Theme.of(context).colorScheme.primary,
@@ -452,44 +458,100 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                   child: const Text('All'),
                 ),
               ),
-              // Category buttons - now scroll to sections
+              // Category buttons - now scroll to sections and toggle subcategories
               ...parentCategories.map((category) {
                 final cartCount = getCategoryCartCount(category.id);
+                final hasSubcategories = category.child.isNotEmpty;
+                final isExpanded = state.isParentExpanded(category.id);
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: OutlinedButton(
-                    onPressed: () {
-                      _scrollToCategory(category.id);
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(category.catNameEn),
-                        if (cartCount > 0) ...[
-                          const SizedBox(width: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              cartCount.toString(),
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
+                  child: isExpanded
+                      ? ElevatedButton(
+                          onPressed: () {
+                            // Scroll to category section
+                            _scrollToCategory(category.id);
+                            // Toggle subcategory bar
+                            if (hasSubcategories) {
+                              context.read<MenuBloc>().add(ToggleSubcategoryBar(category.id));
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
                           ),
-                        ],
-                      ],
-                    ),
-                  ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(category.catNameEn),
+                              if (cartCount > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    cartCount.toString(),
+                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                              if (hasSubcategories) ...[
+                                const SizedBox(width: 4),
+                                Icon(
+                                  isExpanded ? Icons.expand_less : Icons.expand_more,
+                                  size: 18,
+                                ),
+                              ],
+                            ],
+                          ),
+                        )
+                      : OutlinedButton(
+                          onPressed: () {
+                            // Scroll to category section
+                            _scrollToCategory(category.id);
+                            // Toggle subcategory bar
+                            if (hasSubcategories) {
+                              context.read<MenuBloc>().add(ToggleSubcategoryBar(category.id));
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.primary,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(category.catNameEn),
+                              if (cartCount > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    cartCount.toString(),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: Theme.of(context).colorScheme.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (hasSubcategories) ...[
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.expand_more,
+                                  size: 18,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                 );
               }),
             ],
@@ -499,6 +561,84 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
     );
   }
 
+  Widget _buildSubcategoryBar(BuildContext context, MenuLoaded state) {
+    final subcategories = state.expandedSubcategories;
+
+    return BlocBuilder<CartBloc, CartState>(
+      builder: (context, cartState) {
+        // Calculate cart items per subcategory
+        int getSubcategoryCartCount(int subcategoryId) {
+          final subcategoryProductIds = state.allProducts
+              .where((p) => p.cateId == subcategoryId)
+              .map((p) => p.productId)
+              .toSet();
+          return cartState.items
+              .where((item) => subcategoryProductIds.contains(item.product.productId))
+              .fold(0, (sum, item) => sum + item.quantity);
+        }
+
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
+          child: subcategories.isEmpty
+              ? const SizedBox.shrink()
+              : Container(
+                  height: 48,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  color: Colors.grey[50],
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    children: subcategories.map((subcategory) {
+                      final cartCount = getSubcategoryCartCount(subcategory.id);
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: OutlinedButton(
+                          onPressed: () {
+                            _scrollToCategory(subcategory.id);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.orange[700],
+                            side: BorderSide(color: Colors.orange[700]!),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                subcategory.catNameEn,
+                                style: const TextStyle(fontSize: 13),
+                              ),
+                              if (cartCount > 0) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange[700]!.withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    cartCount.toString(),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.orange[700],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+        );
+      },
+    );
+  }
 
   Widget _buildAllCategoriesView(BuildContext context, MenuLoaded state) {
     // If searching, show filtered results

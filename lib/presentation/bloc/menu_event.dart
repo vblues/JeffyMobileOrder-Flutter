@@ -23,3 +23,10 @@ class SearchProducts extends MenuEvent {
 
   SearchProducts(this.query);
 }
+
+/// Event to toggle subcategory bar expansion for a parent category
+class ToggleSubcategoryBar extends MenuEvent {
+  final int? parentCategoryId; // null means collapse all
+
+  ToggleSubcategoryBar(this.parentCategoryId);
+}

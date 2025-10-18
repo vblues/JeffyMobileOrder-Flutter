@@ -23,6 +23,7 @@ class MenuLoaded extends MenuState {
   final int? selectedCategoryId;
   final List<MenuCategory> subcategories;
   final String searchQuery;
+  final int? expandedParentCategoryId; // Track which parent category's subcategories are shown
 
   MenuLoaded({
     required this.categories,
@@ -35,6 +36,7 @@ class MenuLoaded extends MenuState {
     this.selectedCategoryId,
     this.subcategories = const [],
     this.searchQuery = '',
+    this.expandedParentCategoryId,
   });
 
   /// Get parent categories (top-level categories)
@@ -113,6 +115,20 @@ class MenuLoaded extends MenuState {
     return comboProductsMap[productId];
   }
 
+  /// Get subcategories for the expanded parent category
+  List<MenuCategory> get expandedSubcategories {
+    if (expandedParentCategoryId == null) return [];
+
+    final parent = categories
+        .where((cat) => cat.isParent && cat.id == expandedParentCategoryId)
+        .firstOrNull;
+
+    return parent?.child ?? [];
+  }
+
+  /// Check if a parent category is expanded
+  bool isParentExpanded(int categoryId) => expandedParentCategoryId == categoryId;
+
   /// Create a copy with updated fields
   MenuLoaded copyWith({
     List<MenuCategory>? categories,
@@ -125,6 +141,7 @@ class MenuLoaded extends MenuState {
     Object? selectedCategoryId = const _Undefined(),
     List<MenuCategory>? subcategories,
     String? searchQuery,
+    Object? expandedParentCategoryId = const _Undefined(),
   }) {
     return MenuLoaded(
       categories: categories ?? this.categories,
@@ -141,6 +158,9 @@ class MenuLoaded extends MenuState {
           : selectedCategoryId as int?,
       subcategories: subcategories ?? this.subcategories,
       searchQuery: searchQuery ?? this.searchQuery,
+      expandedParentCategoryId: expandedParentCategoryId is _Undefined
+          ? this.expandedParentCategoryId
+          : expandedParentCategoryId as int?,
     );
   }
 }
