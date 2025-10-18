@@ -166,6 +166,8 @@ class _MenuPageView extends StatefulWidget {
 
 class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _categoryKeys = {};
   bool _isSearching = false;
 
   @override
@@ -182,7 +184,31 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
   void dispose() {
     app.routeObserver.unsubscribe(this);
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Scroll to a specific category section
+  void _scrollToCategory(int? categoryId) {
+    if (categoryId == null) {
+      // Scroll to top for "All"
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
+
+    final key = _categoryKeys[categoryId];
+    if (key != null && key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        alignment: 0.0, // Align to top
+      );
+    }
   }
 
   @override
@@ -360,19 +386,23 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
           }
 
           if (state is MenuLoaded) {
+            // Initialize category keys if needed
+            for (final category in state.parentCategories) {
+              _categoryKeys.putIfAbsent(category.id, () => GlobalKey());
+              // Also add keys for subcategories
+              for (final subcategory in category.child) {
+                _categoryKeys.putIfAbsent(subcategory.id, () => GlobalKey());
+              }
+            }
+
             return Column(
               children: [
-                // Parent category chips
+                // Parent category chips (now act as bookmarks)
                 _buildCategoryChips(context, state),
                 const Divider(height: 1),
-                // Subcategory chips (if any)
-                if (state.shouldShowSubcategories) ...[
-                  _buildSubcategoryChips(context, state),
-                  const Divider(height: 1),
-                ],
-                // Product grid
+                // Product grid with all categories
                 Expanded(
-                  child: _buildProductGrid(context, state),
+                  child: _buildAllCategoriesView(context, state),
                 ),
               ],
             );
@@ -409,99 +439,57 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             children: [
-              // "All" category
+              // "All" category - scrolls to top
               Padding(
                 padding: const EdgeInsets.only(right: 8),
-                child: state.selectedParentCategoryId == null && state.selectedCategoryId == null
-                    ? ElevatedButton(
-                        onPressed: () {
-                          context.read<MenuBloc>().add(SelectCategory(null));
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('All'),
-                      )
-                    : OutlinedButton(
-                        onPressed: () {
-                          context.read<MenuBloc>().add(SelectCategory(null));
-                        },
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Theme.of(context).colorScheme.primary,
-                        ),
-                        child: const Text('All'),
-                      ),
+                child: OutlinedButton(
+                  onPressed: () {
+                    _scrollToCategory(null);
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Theme.of(context).colorScheme.primary,
+                  ),
+                  child: const Text('All'),
+                ),
               ),
-              // Category buttons
+              // Category buttons - now scroll to sections
               ...parentCategories.map((category) {
-                final isSelected = state.isParentCategorySelected(category.id);
                 final cartCount = getCategoryCartCount(category.id);
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
-                  child: isSelected
-                      ? ElevatedButton(
-                          onPressed: () {
-                            context.read<MenuBloc>().add(SelectCategory(category.id));
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            foregroundColor: Colors.white,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      _scrollToCategory(category.id);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.primary,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(category.catNameEn),
+                        if (cartCount > 0) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              cartCount.toString(),
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(category.catNameEn),
-                              if (cartCount > 0) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.3),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    cartCount.toString(),
-                                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        )
-                      : OutlinedButton(
-                          onPressed: () {
-                            context.read<MenuBloc>().add(SelectCategory(category.id));
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Theme.of(context).colorScheme.primary,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(category.catNameEn),
-                              if (cartCount > 0) ...[
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    cartCount.toString(),
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
+                        ],
+                      ],
+                    ),
+                  ),
                 );
               }),
             ],
@@ -511,48 +499,144 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
     );
   }
 
-  Widget _buildSubcategoryChips(BuildContext context, MenuLoaded state) {
-    final subcategories = state.subcategories;
 
-    return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      color: Colors.grey[100],
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        children: subcategories.map((subcategory) {
-          final isSelected = state.isCategorySelected(subcategory.id);
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: isSelected
-                ? ElevatedButton(
-                    onPressed: () {
-                      context.read<MenuBloc>().add(SelectCategory(subcategory.id));
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange[700],
-                      foregroundColor: Colors.white,
-                    ),
-                    child: Text(subcategory.catNameEn),
-                  )
-                : OutlinedButton(
-                    onPressed: () {
-                      context.read<MenuBloc>().add(SelectCategory(subcategory.id));
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.orange[700],
-                      side: BorderSide(color: Colors.orange[700]!),
-                    ),
-                    child: Text(subcategory.catNameEn),
-                  ),
+  Widget _buildAllCategoriesView(BuildContext context, MenuLoaded state) {
+    // If searching, show filtered results
+    if (state.searchQuery.isNotEmpty) {
+      return _buildSearchResults(context, state);
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        context.read<MenuBloc>().add(RefreshMenu());
+        await Future.delayed(const Duration(milliseconds: 500));
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Responsive grid: 2 columns on mobile, 3+ on larger screens
+          final crossAxisCount = constraints.maxWidth > 900
+              ? 4
+              : constraints.maxWidth > 600
+                  ? 3
+                  : 2;
+
+          const detailsHeight = 160.0;
+          final totalSpacing = 16.0 * (crossAxisCount - 1) + 32.0;
+          final itemWidth = (constraints.maxWidth - totalSpacing) / crossAxisCount;
+          final aspectRatio = itemWidth / (itemWidth + detailsHeight);
+
+          final gridDelegate = SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: aspectRatio,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 20,
           );
-        }).toList(),
+
+          // Build slivers for each category
+          final slivers = <Widget>[];
+
+          for (final category in state.parentCategories) {
+            // Get products for this category (including from subcategories)
+            final categoryProducts = state.allProducts
+                .where((product) => product.cateId == category.id)
+                .toList();
+
+            // Check if category has subcategories with products
+            final subcategoriesWithProducts = category.child.where((sub) {
+              return state.allProducts.any((p) => p.cateId == sub.id);
+            }).toList();
+
+            // Add category header
+            slivers.add(
+              SliverToBoxAdapter(
+                key: _categoryKeys[category.id],
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  color: Colors.grey[100],
+                  child: Text(
+                    category.catNameEn,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            );
+
+            // Add products for parent category (if any)
+            if (categoryProducts.isNotEmpty) {
+              slivers.add(
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  sliver: SliverGrid(
+                    gridDelegate: gridDelegate,
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return _buildProductCard(context, categoryProducts[index]);
+                      },
+                      childCount: categoryProducts.length,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            // Add subcategories
+            for (final subcategory in subcategoriesWithProducts) {
+              final subcategoryProducts = state.allProducts
+                  .where((product) => product.cateId == subcategory.id)
+                  .toList();
+
+              if (subcategoryProducts.isEmpty) continue;
+
+              // Subcategory header (smaller than parent)
+              slivers.add(
+                SliverToBoxAdapter(
+                  key: _categoryKeys[subcategory.id],
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 16, 6),
+                    color: Colors.grey[50],
+                    child: Text(
+                      subcategory.catNameEn,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.orange[700],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+
+              // Subcategory products
+              slivers.add(
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  sliver: SliverGrid(
+                    gridDelegate: gridDelegate,
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return _buildProductCard(context, subcategoryProducts[index]);
+                      },
+                      childCount: subcategoryProducts.length,
+                    ),
+                  ),
+                ),
+              );
+            }
+          }
+
+          return CustomScrollView(
+            controller: _scrollController,
+            slivers: slivers,
+          );
+        },
       ),
     );
   }
 
-  Widget _buildProductGrid(BuildContext context, MenuLoaded state) {
+  Widget _buildSearchResults(BuildContext context, MenuLoaded state) {
     final products = state.displayProducts;
 
     if (products.isEmpty) {
@@ -567,9 +651,7 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
             ),
             const SizedBox(height: 16),
             Text(
-              state.searchQuery.isNotEmpty
-                  ? 'No products found for "${state.searchQuery}"'
-                  : 'No products in this category',
+              'No products found for "${state.searchQuery}"',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -580,51 +662,35 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<MenuBloc>().add(RefreshMenu());
-        // Wait for the refresh to complete
-        await Future.delayed(const Duration(milliseconds: 500));
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 900
+            ? 4
+            : constraints.maxWidth > 600
+                ? 3
+                : 2;
+
+        const detailsHeight = 160.0;
+        final totalSpacing = 16.0 * (crossAxisCount - 1) + 32.0;
+        final itemWidth = (constraints.maxWidth - totalSpacing) / crossAxisCount;
+        final aspectRatio = itemWidth / (itemWidth + detailsHeight);
+
+        return GridView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(16),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: aspectRatio,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 20,
+          ),
+          itemCount: products.length,
+          itemBuilder: (context, index) {
+            final product = products[index];
+            return _buildProductCard(context, product);
+          },
+        );
       },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Responsive grid: 2 columns on mobile, 3+ on larger screens
-          final crossAxisCount = constraints.maxWidth > 900
-              ? 4
-              : constraints.maxWidth > 600
-                  ? 3
-                  : 2;
-
-          // Fixed card height calculation to match _buildProductCard:
-          // Card height = imageWidth + detailsHeight
-          // detailsHeight = 160px (24 padding + 60 name + 14 spacing + 24 price + 38 button)
-          // Aspect ratio = W / (W + 160)
-          // For mobile (W≈170): 170/(170+160) = 0.515
-          // For tablet (W≈230): 230/(230+160) = 0.590
-          // For desktop (W≈200): 200/(200+160) = 0.556
-          const detailsHeight = 160.0;
-
-          // Calculate width per item
-          final totalSpacing = 16.0 * (crossAxisCount - 1) + 32.0; // crossSpacing + horizontal padding
-          final itemWidth = (constraints.maxWidth - totalSpacing) / crossAxisCount;
-          final aspectRatio = itemWidth / (itemWidth + detailsHeight);
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              childAspectRatio: aspectRatio,
-              crossAxisSpacing: 16,
-              mainAxisSpacing: 20,
-            ),
-            itemCount: products.length,
-            itemBuilder: (context, index) {
-              final product = products[index];
-              return _buildProductCard(context, product);
-            },
-          );
-        },
-      ),
     );
   }
 

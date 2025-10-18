@@ -1,5 +1,4 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../data/models/menu_model.dart';
 import '../../data/models/product_model.dart';
 import '../../data/models/product_attribute_model.dart';
 import '../../data/models/combo_model.dart';
@@ -133,92 +132,21 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
   }
 
   /// Handle SelectCategory event
+  /// Note: This is now mainly used for tracking scroll position
+  /// Actual filtering only happens for search
   void _onSelectCategory(SelectCategory event, Emitter<MenuState> emit) {
     if (state is MenuLoaded) {
       final currentState = state as MenuLoaded;
 
-      if (event.categoryId == null) {
-        // Show all products, clear selection
-        emit(currentState.copyWith(
-          filteredProducts: currentState.allProducts,
-          selectedParentCategoryId: null,
-          selectedCategoryId: null,
-          subcategories: [],
-          searchQuery: '', // Clear search when selecting category
-        ));
-        return;
-      }
-
-      // Find the selected category
-      final categoryId = event.categoryId!; // Safe to use ! here after null check above
-      final selectedCategory = _findCategoryById(
-        currentState.categories,
-        categoryId,
-      );
-
-      if (selectedCategory == null) return;
-
-      // Check if this category has children (subcategories)
-      if (selectedCategory.hasChildren) {
-        // Check if parent category has products
-        final parentProducts = currentState.allProducts
-            .where((product) => product.cateId == categoryId)
-            .toList();
-
-        if (parentProducts.isEmpty && selectedCategory.child.isNotEmpty) {
-          // Parent has no products, auto-select first subcategory
-          final firstSubcategory = selectedCategory.child.first;
-          final firstSubcategoryProducts = currentState.allProducts
-              .where((product) => product.cateId == firstSubcategory.id)
-              .toList();
-
-          emit(currentState.copyWith(
-            selectedParentCategoryId: categoryId,
-            selectedCategoryId: firstSubcategory.id,
-            subcategories: selectedCategory.child,
-            filteredProducts: firstSubcategoryProducts,
-            searchQuery: '',
-          ));
-        } else {
-          // Parent has products, show them with subcategories available
-          emit(currentState.copyWith(
-            selectedParentCategoryId: categoryId,
-            selectedCategoryId: null,
-            subcategories: selectedCategory.child,
-            filteredProducts: parentProducts,
-            searchQuery: '',
-          ));
-        }
-      } else {
-        // No children, show products for this category
-        final filteredProducts = currentState.allProducts
-            .where((product) => product.cateId == categoryId)
-            .toList();
-
-        // Determine if this is a parent or subcategory
-        final isParent = selectedCategory.isParent;
-
-        emit(currentState.copyWith(
-          selectedParentCategoryId: isParent ? categoryId : currentState.selectedParentCategoryId,
-          selectedCategoryId: categoryId,
-          subcategories: isParent ? [] : currentState.subcategories,
-          filteredProducts: filteredProducts,
-          searchQuery: '',
-        ));
-      }
+      // Simply update the selected category tracking
+      // No filtering needed since all products are shown in sections
+      emit(currentState.copyWith(
+        selectedParentCategoryId: event.categoryId,
+        selectedCategoryId: event.categoryId,
+        subcategories: [],
+        searchQuery: '', // Clear search when selecting category
+      ));
     }
-  }
-
-  /// Helper method to find a category by ID in the category tree
-  MenuCategory? _findCategoryById(List<MenuCategory> categories, int id) {
-    for (final category in categories) {
-      if (category.id == id) return category;
-
-      // Search in children
-      final found = _findCategoryById(category.child, id);
-      if (found != null) return found;
-    }
-    return null;
   }
 
   /// Handle RefreshMenu event
