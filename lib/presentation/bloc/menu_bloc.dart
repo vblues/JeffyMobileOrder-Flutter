@@ -171,12 +171,15 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     if (state is MenuLoaded) {
       final currentState = state as MenuLoaded;
 
-      // If clicking the same parent category, collapse it (set to null)
-      // If clicking a different parent category, expand it
-      // If event.parentCategoryId is null, collapse all
-      final newExpandedId = currentState.expandedParentCategoryId == event.parentCategoryId
+      // Logic:
+      // - If event.parentCategoryId is null, always collapse (set to null)
+      // - If clicking the same parent category that's currently expanded, collapse it (toggle)
+      // - If clicking a different parent category, expand it (switch)
+      final newExpandedId = event.parentCategoryId == null
           ? null
-          : event.parentCategoryId;
+          : (currentState.expandedParentCategoryId == event.parentCategoryId
+              ? null
+              : event.parentCategoryId);
 
       emit(currentState.copyWith(
         expandedParentCategoryId: newExpandedId,

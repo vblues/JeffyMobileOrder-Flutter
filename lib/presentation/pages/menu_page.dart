@@ -471,10 +471,10 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                           onPressed: () {
                             // Scroll to category section
                             _scrollToCategory(category.id);
-                            // Toggle subcategory bar
-                            if (hasSubcategories) {
-                              context.read<MenuBloc>().add(ToggleSubcategoryBar(category.id));
-                            }
+                            // Toggle subcategory bar (collapse if no subcategories)
+                            context.read<MenuBloc>().add(
+                              ToggleSubcategoryBar(hasSubcategories ? category.id : null)
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Theme.of(context).colorScheme.primary,
@@ -512,10 +512,10 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                           onPressed: () {
                             // Scroll to category section
                             _scrollToCategory(category.id);
-                            // Toggle subcategory bar
-                            if (hasSubcategories) {
-                              context.read<MenuBloc>().add(ToggleSubcategoryBar(category.id));
-                            }
+                            // Toggle subcategory bar (expand if has subcategories, collapse if not)
+                            context.read<MenuBloc>().add(
+                              ToggleSubcategoryBar(hasSubcategories ? category.id : null)
+                            );
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Theme.of(context).colorScheme.primary,
