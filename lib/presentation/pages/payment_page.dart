@@ -453,8 +453,32 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
                         (m) => m.id == state.selectedPaymentMethod,
                       );
 
-                      // Convert pay_code to int
-                      final paymentCode = int.parse(selectedMethod.payCode);
+                      // Diagnostic logging for payment submission
+                      print('[PaymentPage] Selected payment method: ${selectedMethod.payName}');
+                      print('[PaymentPage] Payment method ID: ${selectedMethod.id}');
+                      print('[PaymentPage] Payment method payCode: ${selectedMethod.payCode}');
+                      print('[PaymentPage] Payment method payCode type: ${selectedMethod.payCode.runtimeType}');
+
+                      // Convert pay_code to int with error handling
+                      int? paymentCode;
+                      try {
+                        paymentCode = int.parse(selectedMethod.payCode);
+                        print('[PaymentPage] Parsed paymentCode: $paymentCode');
+                      } catch (e) {
+                        print('[PaymentPage] ERROR parsing payCode to int: $e');
+                        print('[PaymentPage] payCode value: "${selectedMethod.payCode}"');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Invalid payment code: ${selectedMethod.payCode}'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
+                      print('[PaymentPage] Submitting order...');
+                      print('[PaymentPage] Cart items: ${_cartItems.length}');
+                      print('[PaymentPage] Sales type: ${_salesTypeSelection!.salesType}');
 
                       context.read<PaymentBloc>().add(
                             SubmitOrder(

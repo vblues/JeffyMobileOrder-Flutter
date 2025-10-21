@@ -95,7 +95,7 @@ class MenuPage extends StatelessWidget {
         // Parse credentials and store info from JSON
         final credentials = StoreCredentialsModel.fromJsonString(credentialsJson);
         final storeInfoData = json.decode(storeInfoJson) as Map<String, dynamic>;
-        final storeId = storeInfoData['id'] as int? ?? 0;
+        final storeId = storeInfoData['store_id'] as int? ?? 0;
 
         // Extract store name and brand color
         final storeName = _extractStoreName(storeInfoData);

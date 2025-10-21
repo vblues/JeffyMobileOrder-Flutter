@@ -49,12 +49,20 @@ class MenuRemoteDataSource {
 
     final url = '${credentials.apiDomain}/${ApiConstants.getMenu}';
 
+    print('[MenuDataSource] URL: $url');
+    print('[MenuDataSource] Headers: $headers');
+    print('[MenuDataSource] Body: $bodyJson');
+
     try {
       final response = await _dio.post(
         url,
         data: bodyJson,
         options: Options(headers: headers),
       );
+
+      print('[MenuDataSource] Response status: ${response.statusCode}');
+      print('[MenuDataSource] Response data type: ${response.data.runtimeType}');
+      print('[MenuDataSource] Response data: ${response.data}');
 
       return MenuResponse.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {

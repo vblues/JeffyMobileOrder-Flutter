@@ -208,6 +208,7 @@ class CartComboItem {
   final int categoryTypeNameSn;
   final String categoryName;
   final int productId;
+  final String productSn;  // Added for order submission
   final String productName;
   final double priceAdjustment;
   final List<CartModifier> modifiers;
@@ -216,6 +217,7 @@ class CartComboItem {
     required this.categoryTypeNameSn,
     required this.categoryName,
     required this.productId,
+    required this.productSn,  // Added
     required this.productName,
     required this.priceAdjustment,
     this.modifiers = const [],
@@ -235,6 +237,7 @@ class CartComboItem {
       categoryTypeNameSn: item.categoryTypeNameSn,
       categoryName: item.categoryName,
       productId: item.productId,
+      productSn: item.productSn,  // Added
       productName: item.productName,
       priceAdjustment: item.priceAdjustment,
       modifiers: item.modifiers
@@ -255,6 +258,7 @@ class CartComboItem {
       'categoryTypeNameSn': categoryTypeNameSn,
       'categoryName': categoryName,
       'productId': productId,
+      'productSn': productSn,  // Added
       'productName': productName,
       'priceAdjustment': priceAdjustment,
       'modifiers': modifiers.map((m) => m.toJson()).toList(),
@@ -271,6 +275,7 @@ class CartComboItem {
       categoryTypeNameSn: _parseInt(json['categoryTypeNameSn']),
       categoryName: json['categoryName'] as String,
       productId: _parseInt(json['productId']),
+      productSn: json['productSn'] as String? ?? '',  // Added
       productName: json['productName'] as String,
       priceAdjustment: (json['priceAdjustment'] as num).toDouble(),
       modifiers: modifiers,

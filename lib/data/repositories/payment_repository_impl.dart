@@ -7,6 +7,7 @@ import '../../core/utils/md5_helper.dart';
 import '../models/cart_item_model.dart';
 import '../models/sales_type_model.dart';
 import '../models/store_credentials_model.dart';
+import '../models/store_info_model.dart';
 
 /// Repository for handling payment and order submission
 class PaymentRepository {
@@ -28,7 +29,7 @@ class PaymentRepository {
     final credentials = await _getCredentials();
 
     // Build order object
-    final orderRequest = _buildOrderRequest(
+    final orderRequest = await _buildOrderRequest(
       cartItems: cartItems,
       storeId: storeId,
       salesTypeSelection: salesTypeSelection,
@@ -79,6 +80,31 @@ class PaymentRepository {
 
     final credentialsData = json.decode(credentialsJson) as Map<String, dynamic>;
     return StoreCredentialsModel.fromJson(credentialsData);
+  }
+
+  /// Get stored store info
+  Future<StoreInfo> _getStoreInfo() async {
+    print('[PaymentRepository] Getting store info...');
+    final prefs = await SharedPreferences.getInstance();
+    final storeInfoJson = prefs.getString(StorageKeys.storeInfo);
+    if (storeInfoJson == null) {
+      print('[PaymentRepository] ERROR: No stored store info found');
+      throw Exception('No stored store info found');
+    }
+
+    print('[PaymentRepository] Decoding store info JSON...');
+    final storeInfoData = json.decode(storeInfoJson) as Map<String, dynamic>;
+    print('[PaymentRepository] Creating StoreInfo from JSON...');
+
+    try {
+      final storeInfo = StoreInfo.fromJson(storeInfoData);
+      print('[PaymentRepository] StoreInfo created successfully');
+      return storeInfo;
+    } catch (e, stackTrace) {
+      print('[PaymentRepository] ERROR creating StoreInfo: $e');
+      print('[PaymentRepository] Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   /// Make authenticated POST request
@@ -141,13 +167,13 @@ class PaymentRepository {
   }
 
   /// Build order request object
-  Map<String, dynamic> _buildOrderRequest({
+  Future<Map<String, dynamic>> _buildOrderRequest({
     required List<CartItem> cartItems,
     required int storeId,
     required SalesTypeSelection salesTypeSelection,
     required int paymentMethodId,
     String? tableSessionId,
-  }) {
+  }) async {
     print('[PaymentRepository] Building order request...');
     print('[PaymentRepository] Cart items count: ${cartItems.length}');
     print('[PaymentRepository] Store ID: $storeId');
@@ -189,11 +215,18 @@ class PaymentRepository {
       if (paymentMethodId == 60 || paymentMethodId == 2013) 'status': 'pending',
     };
 
-    // Get sales type number
+    // Get store info to retrieve sales type configuration
+    final storeInfo = await _getStoreInfo();
+    final salesTypeConfig = storeInfo.salesTypeConfig;
+
+    // Get sales type number from configuration
     final salesTypeNum = _getSalesTypeNumber(
       salesTypeSelection.salesType,
       salesTypeSelection.schedule,
+      salesTypeConfig,
     );
+
+    print('[PaymentRepository] Sales type number: $salesTypeNum');
 
     // Build transaction object
     final transaction = {
@@ -230,19 +263,18 @@ class PaymentRepository {
   /// Build single item object
   Map<String, dynamic> _buildSingleItem(CartItem cartItem) {
     final item = {
-      'prodNum': cartItem.product.productSn,  // Changed from 'mainproduct' to 'prodNum'
+      'prodNum': cartItem.product.productSn,  // Capital N - STRING per C# model
       'quantity': cartItem.quantity,
-      'costEach': cartItem.product.price,
-      'Modifiers': [],  // Changed from 'subproducts' to 'Modifiers' array
+      'modifiers': [],  // lowercase
     };
 
     // Add modifiers if any
     if (cartItem.modifiers.isNotEmpty) {
-      item['Modifiers'] = cartItem.modifiers.map((modifier) {
+      item['modifiers'] = cartItem.modifiers.map((modifier) {
         return {
-          'subproduct': modifier.attValSn,
+          'prodNum': modifier.attValSn,  // Capital N - STRING per C# model
           'quantity': 1,
-          'price': modifier.price.toStringAsFixed(2),
+          'description': modifier.attValName,
         };
       }).toList();
     }
@@ -250,45 +282,94 @@ class PaymentRepository {
     return item;
   }
 
-  /// Build combo item object (simplified - combos not fully implemented yet)
+  /// Build combo item object
   Map<String, dynamic> _buildComboItem(CartItem cartItem) {
+    print('[PaymentRepository] Building combo item...');
+    print('[PaymentRepository] Main product: ${cartItem.product.productSn}');
+    print('[PaymentRepository] Main modifiers count: ${cartItem.modifiers.length}');
+    print('[PaymentRepository] Combo items count: ${cartItem.comboItems.length}');
+
     final List<Map<String, dynamic>> subproducts = [];
 
-    // Add main combo item modifiers
-    for (final modifier in cartItem.modifiers) {
+    // Add combo sub-products
+    for (final comboItem in cartItem.comboItems) {
+      print('[PaymentRepository] Combo sub-product SN: ${comboItem.productSn}');
+      print('[PaymentRepository] Combo sub-product modifiers: ${comboItem.modifiers.length}');
+
+      // Build modifiers array for this sub-product
+      final modifiers = comboItem.modifiers.map((modifier) {
+        return {
+          'prodNum': modifier.attValSn,  // Capital N - STRING per C# model
+          'quantity': 1,
+          'description': modifier.attValName,
+        };
+      }).toList();
+
       subproducts.add({
-        'subproduct': modifier.attValSn,
+        'prodNum': comboItem.productSn,  // Capital N - STRING per C# model (use productSn not productId)
         'quantity': 1,
-        'price': modifier.price.toStringAsFixed(2),
+        'modifiers': modifiers,
       });
     }
 
-    // Note: Combo products structure needs to be verified against API
-    // This is a simplified implementation
+    print('[PaymentRepository] Total subproducts built: ${subproducts.length}');
+
+    // Build main product modifiers
+    final mainModifiers = cartItem.modifiers.map((modifier) {
+      return {
+        'prodNum': modifier.attValSn,  // Capital N - STRING per C# model
+        'quantity': 1,
+        'description': modifier.attValName,
+      };
+    }).toList();
+
+    print('[PaymentRepository] Main product modifiers built: ${mainModifiers.length}');
 
     return {
-      'mainproduct': cartItem.product.productSn,
+      'mainProduct': cartItem.product.productSn,  // Capital P - STRING per C# model
       'quantity': cartItem.quantity,
-      'costEach': cartItem.product.price,
-      'subproducts': {
-        'subproduct': subproducts,
+      'modifiers': mainModifiers,  // Add main product modifiers
+      'subProducts': {  // Capital P
+        'subProduct': subproducts,  // Capital P
       },
     };
   }
 
-  /// Get sales type number from SalesType enum
-  int _getSalesTypeNumber(SalesType salesType, OrderSchedule? schedule) {
+  /// Get sales type number from SalesType enum using store configuration
+  int _getSalesTypeNumber(
+    SalesType salesType,
+    OrderSchedule? schedule,
+    SalesTypeConfig config,
+  ) {
+    print('[PaymentRepository] Getting sales type number...');
+    print('[PaymentRepository] salesType: $salesType');
+    print('[PaymentRepository] schedule: ${schedule?.isASAP}');
+    print('[PaymentRepository] config.dineIn?.id: ${config.dineIn?.id}');
+    print('[PaymentRepository] config.takeaway?.id: ${config.takeaway?.id}');
+    print('[PaymentRepository] config.pickUp?.id: ${config.pickUp?.id}');
+
+    int result;
     switch (salesType) {
       case SalesType.dineIn:
-        return 3; // Dine-in
+        result = config.dineIn?.id ?? 1; // Dine-in (default: 1)
+        print('[PaymentRepository] Using dineIn: $result');
+        break;
       case SalesType.pickup:
         // Check if ASAP or scheduled
         if (schedule != null && schedule.isASAP) {
-          return 2; // Pickup ASAP
+          result = config.takeaway?.id ?? 2; // Pickup ASAP / Takeaway (default: 2)
+          print('[PaymentRepository] Using takeaway (ASAP): $result');
         } else {
-          return 5; // Pickup scheduled
+          result = config.pickUp?.id ?? 5; // Pickup scheduled (default: 5)
+          print('[PaymentRepository] Using pickUp (scheduled): $result');
         }
+        break;
     }
+
+    print('[PaymentRepository] Final sales type number: $result');
+    print('[PaymentRepository] Sales type number type: ${result.runtimeType}');
+
+    return result;
   }
 
   /// Helper to get store ID handling both int and string storage

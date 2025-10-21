@@ -119,7 +119,7 @@ class StoreRepository {
       }
 
       final jsonData = {
-        'id': storeData.storeId,
+        'store_id': storeData.storeId, // Fixed: use 'store_id' instead of 'id'
         'store_name': storeData.storeName, // Raw JSON string
         'store_sn': storeData.storeSn,
         'store_note': storeData.storeNote,

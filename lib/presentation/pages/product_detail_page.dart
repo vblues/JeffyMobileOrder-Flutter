@@ -80,6 +80,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               categoryTypeNameSn: int.tryParse(category.typeNameSn) ?? 0,
               categoryName: category.typeNameEn,
               productId: defaultId,
+              productSn: comboProduct.productSn,  // Added
               productName: comboProduct.productNameEn,
               priceAdjustment: priceAdjustment,
             ),
@@ -1268,6 +1269,7 @@ class _ComboSelectionSheetState extends State<_ComboSelectionSheet> {
                                     categoryTypeNameSn: int.tryParse(widget.category.typeNameSn) ?? 0,
                                     categoryName: widget.category.typeNameEn,
                                     productId: product.productId,
+                                    productSn: product.productSn,  // Added
                                     productName: product.productNameEn,
                                     priceAdjustment: priceAdjustment,
                                   ),
@@ -1323,6 +1325,7 @@ class _ComboSelectionSheetState extends State<_ComboSelectionSheet> {
                                       categoryTypeNameSn: int.tryParse(widget.category.typeNameSn) ?? 0,
                                       categoryName: widget.category.typeNameEn,
                                       productId: product.productId,
+                                      productSn: product.productSn,  // Added
                                       productName: product.productNameEn,
                                       priceAdjustment: priceAdjustment,
                                     ),

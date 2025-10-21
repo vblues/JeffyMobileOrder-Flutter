@@ -236,6 +236,7 @@ class SelectedComboItem {
   final int categoryTypeNameSn;
   final String categoryName;
   final int productId;
+  final String productSn;  // Added for order submission
   final String productName;
   final double priceAdjustment;
   final List<ComboModifier> modifiers; // Product modifiers if any
@@ -244,6 +245,7 @@ class SelectedComboItem {
     required this.categoryTypeNameSn,
     required this.categoryName,
     required this.productId,
+    required this.productSn,  // Added
     required this.productName,
     required this.priceAdjustment,
     this.modifiers = const [],
@@ -262,6 +264,7 @@ class SelectedComboItem {
       'categoryTypeNameSn': categoryTypeNameSn,
       'categoryName': categoryName,
       'productId': productId,
+      'productSn': productSn,  // Added
       'productName': productName,
       'priceAdjustment': priceAdjustment,
       'modifiers': modifiers.map((m) => m.toJson()).toList(),
@@ -273,6 +276,7 @@ class SelectedComboItem {
       categoryTypeNameSn: ComboActivity._parseIntWithDefault(json['categoryTypeNameSn'], 0),
       categoryName: json['categoryName'] as String? ?? '',
       productId: ComboActivity._parseIntWithDefault(json['productId'], 0),
+      productSn: json['productSn'] as String? ?? '',  // Added
       productName: json['productName'] as String? ?? '',
       priceAdjustment: (json['priceAdjustment'] as num?)?.toDouble() ?? 0.0,
       modifiers: (json['modifiers'] as List<dynamic>?)
@@ -289,6 +293,7 @@ class SelectedComboItem {
       categoryTypeNameSn: categoryTypeNameSn,
       categoryName: categoryName,
       productId: productId,
+      productSn: productSn,  // Added
       productName: productName,
       priceAdjustment: priceAdjustment,
       modifiers: modifiers ?? this.modifiers,
