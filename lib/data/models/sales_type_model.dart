@@ -19,7 +19,7 @@ enum SalesType {
       case SalesType.dineIn:
         return '🍽️';
       case SalesType.pickup:
-        return '🚗';
+        return '🥡';
     }
   }
 

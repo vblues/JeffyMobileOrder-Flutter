@@ -55,173 +55,212 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isDesktop = screenSize.width > 600;
+    final isMobile = screenSize.width < 400;
+
+    // Calculate appropriate dialog width
+    final dialogWidth = isDesktop ? 420.0 : (isMobile ? screenSize.width * 0.9 : 360.0);
+
     return Dialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: 400,
-          maxHeight: 600,
+      child: Container(
+        width: dialogWidth,
+        constraints: BoxConstraints(
+          maxHeight: screenSize.height * 0.85, // Allow dialog to use up to 85% of screen height
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(isDesktop ? 24.0 : 20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Enter Pager Number',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: isDesktop ? 24 : 20,
+                            ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.of(context).pop(),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      iconSize: 24,
+                    ),
+                  ],
+                ),
+                SizedBox(height: isDesktop ? 16 : 12),
+
+                // Pager message
+                if (widget.pagerInfo?.message != null) ...[
                   Text(
-                    'Enter Pager Number',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+                    widget.pagerInfo!.message!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[700],
                         ),
+                    textAlign: TextAlign.center,
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.of(context).pop(),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
+                  SizedBox(height: isDesktop ? 16 : 12),
                 ],
-              ),
-              const SizedBox(height: 16),
 
-              // Pager message
-              if (widget.pagerInfo?.message != null) ...[
-                Text(
-                  widget.pagerInfo!.message!,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey[700],
-                      ),
-                  textAlign: TextAlign.center,
+                // Display
+                Container(
+                  height: isDesktop ? 80 : 70,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _pagerNumber.isEmpty ? '---' : _pagerNumber.padRight(3, '_'),
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 16,
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: isDesktop ? 36 : 32,
+                          ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: isDesktop ? 20 : 16),
+
+                // Number pad
+                _buildNumberPad(dialogWidth, isDesktop),
+                SizedBox(height: isDesktop ? 24 : 20),
+
+                // Action buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _onClear,
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
+                          side: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        child: Text('Clear', style: TextStyle(fontSize: isDesktop ? 16 : 14)),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        onPressed: _pagerNumber.isNotEmpty ? _onConfirm : null,
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.grey[300],
+                        ),
+                        child: Text('Confirm', style: TextStyle(fontSize: isDesktop ? 16 : 14)),
+                      ),
+                    ),
+                  ],
+                ),
               ],
-
-              // Display
-              Container(
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    _pagerNumber.isEmpty ? '---' : _pagerNumber.padRight(3, '_'),
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Number pad
-              _buildNumberPad(),
-              const SizedBox(height: 24),
-
-              // Action buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _onClear,
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      child: const Text('Clear'),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: ElevatedButton(
-                      onPressed: _pagerNumber.isNotEmpty ? _onConfirm : null,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: Colors.grey[300],
-                      ),
-                      child: const Text('Confirm'),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNumberPad() {
-    // Number pad buttons arranged in a grid
-    final buttons = [
-      '1', '2', '3',
-      '4', '5', '6',
-      '7', '8', '9',
-      'back', '0', 'clear',
-    ];
+  Widget _buildNumberPad(double dialogWidth, bool isDesktop) {
+    // Calculate button size based on available width
+    final horizontalPadding = isDesktop ? 48.0 : 40.0;
+    final availableWidth = dialogWidth - horizontalPadding;
+    final buttonSpacing = isDesktop ? 12.0 : 10.0;
+    final buttonWidth = (availableWidth - (2 * buttonSpacing)) / 3;
+    final buttonHeight = isDesktop ? 60.0 : 56.0;
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.5,
-      ),
-      itemCount: buttons.length,
-      itemBuilder: (context, index) {
-        final button = buttons[index];
+    // Number pad buttons arranged in rows
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Row 1: 1, 2, 3
+        _buildButtonRow(['1', '2', '3'], buttonWidth, buttonHeight, buttonSpacing),
+        SizedBox(height: buttonSpacing),
 
-        if (button == 'back') {
-          return _buildSpecialButton(
-            icon: Icons.backspace_outlined,
-            onPressed: _onBackspace,
-          );
-        }
+        // Row 2: 4, 5, 6
+        _buildButtonRow(['4', '5', '6'], buttonWidth, buttonHeight, buttonSpacing),
+        SizedBox(height: buttonSpacing),
 
-        if (button == 'clear') {
-          return _buildSpecialButton(
-            icon: Icons.clear,
-            onPressed: _onClear,
-          );
-        }
+        // Row 3: 7, 8, 9
+        _buildButtonRow(['7', '8', '9'], buttonWidth, buttonHeight, buttonSpacing),
+        SizedBox(height: buttonSpacing),
 
-        return _buildNumberButton(button);
-      },
+        // Row 4: backspace, 0, clear
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildSpecialButton(
+              icon: Icons.backspace_outlined,
+              onPressed: _onBackspace,
+              width: buttonWidth,
+              height: buttonHeight,
+            ),
+            SizedBox(width: buttonSpacing),
+            _buildNumberButton('0', buttonWidth, buttonHeight),
+            SizedBox(width: buttonSpacing),
+            _buildSpecialButton(
+              icon: Icons.clear,
+              onPressed: _onClear,
+              width: buttonWidth,
+              height: buttonHeight,
+            ),
+          ],
+        ),
+      ],
     );
   }
 
-  Widget _buildNumberButton(String number) {
-    return Material(
-      color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: () => _onNumberPressed(number),
+  Widget _buildButtonRow(List<String> numbers, double buttonWidth, double buttonHeight, double spacing) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        for (int i = 0; i < numbers.length; i++) ...[
+          if (i > 0) SizedBox(width: spacing),
+          _buildNumberButton(numbers[i], buttonWidth, buttonHeight),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildNumberButton(String number, double width, double height) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Material(
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        child: Center(
-          child: Text(
-            number,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+        child: InkWell(
+          onTap: () => _onNumberPressed(number),
+          borderRadius: BorderRadius.circular(12),
+          child: Center(
+            child: Text(
+              number,
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 28,
+                  ),
+            ),
           ),
         ),
       ),
@@ -231,18 +270,24 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
   Widget _buildSpecialButton({
     required IconData icon,
     required VoidCallback onPressed,
+    required double width,
+    required double height,
   }) {
-    return Material(
-      color: Colors.grey[200],
-      borderRadius: BorderRadius.circular(12),
-      child: InkWell(
-        onTap: onPressed,
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Material(
+        color: Colors.grey[200],
         borderRadius: BorderRadius.circular(12),
-        child: Center(
-          child: Icon(
-            icon,
-            size: 32,
-            color: Colors.grey[700],
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(12),
+          child: Center(
+            child: Icon(
+              icon,
+              size: 28,
+              color: Colors.grey[700],
+            ),
           ),
         ),
       ),
