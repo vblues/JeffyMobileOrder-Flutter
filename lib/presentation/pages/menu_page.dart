@@ -38,7 +38,11 @@ class MenuPage extends StatelessWidget {
         final credentialsJson = snapshot.data!.getString(StorageKeys.storeCredentials);
         final storeInfoJson = snapshot.data!.getString(StorageKeys.storeInfo);
 
+        print('[MenuPage] credentialsJson: ${credentialsJson != null ? "EXISTS" : "NULL"}');
+        print('[MenuPage] storeInfoJson: ${storeInfoJson != null ? "EXISTS" : "NULL"}');
+
         if (credentialsJson == null || storeInfoJson == null) {
+          print('[MenuPage] Missing data - showing QR scan message');
           return Scaffold(
             appBar: AppBar(
               title: const Text('Menu'),
@@ -97,24 +101,15 @@ class MenuPage extends StatelessWidget {
         final storeName = _extractStoreName(storeInfoData);
         final brandColor = _extractBrandColor(storeInfoData);
 
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider(
-              create: (context) => MenuBloc(
-                menuRepository: MenuRepository(
-                  remoteDataSource: MenuRemoteDataSource(),
-                  sharedPreferences: snapshot.data!,
-                ),
-                credentials: credentials,
-                storeId: storeId,
-              )..add(LoadMenu()),
+        return BlocProvider(
+          create: (context) => MenuBloc(
+            menuRepository: MenuRepository(
+              remoteDataSource: MenuRemoteDataSource(),
+              sharedPreferences: snapshot.data!,
             ),
-            BlocProvider(
-              create: (context) => CartBloc(
-                CartRepository(snapshot.data!),
-              )..add(LoadCart()),
-            ),
-          ],
+            credentials: credentials,
+            storeId: storeId,
+          )..add(LoadMenu()),
           child: _MenuPageView(
             storeName: storeName,
             brandColor: brandColor,
@@ -169,6 +164,15 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
   final ScrollController _scrollController = ScrollController();
   final Map<int, GlobalKey> _categoryKeys = {};
   bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load cart using global CartBloc when menu page initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CartBloc>().add(LoadCart());
+    });
+  }
 
   @override
   void didChangeDependencies() {

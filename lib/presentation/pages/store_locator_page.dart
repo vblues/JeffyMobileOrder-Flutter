@@ -8,6 +8,8 @@ import '../../data/repositories/store_repository_impl.dart';
 import '../bloc/store_bloc.dart';
 import '../bloc/store_event.dart';
 import '../bloc/store_state.dart';
+import '../bloc/cart_bloc.dart';
+import '../bloc/cart_event.dart';
 
 class StoreLocatorPage extends StatelessWidget {
   final String storeId;
@@ -43,11 +45,25 @@ class StoreLocatorPage extends StatelessWidget {
   }
 }
 
-class _StoreLocatorView extends StatelessWidget {
+class _StoreLocatorView extends StatefulWidget {
   final String storeId;
   final SharedPreferences preferences;
 
   const _StoreLocatorView({required this.storeId, required this.preferences});
+
+  @override
+  State<_StoreLocatorView> createState() => _StoreLocatorViewState();
+}
+
+class _StoreLocatorViewState extends State<_StoreLocatorView> {
+  @override
+  void initState() {
+    super.initState();
+    // Clear global cart on entry - fresh start for each store visit
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CartBloc>().add(ClearCart());
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,17 +91,25 @@ class _StoreLocatorView extends StatelessWidget {
 
   Widget _buildBody(BuildContext context, StoreState state) {
           if (state is StoreLoading) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const CircularProgressIndicator(),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Loading store information...',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ],
+            return Container(
+              color: Colors.blue,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'STORE LOCATOR LOADING',
+                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 16),
+                    const CircularProgressIndicator(color: Colors.white),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Store ID: ${widget.storeId}',
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -117,7 +141,7 @@ class _StoreLocatorView extends StatelessWidget {
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () {
-                        context.read<StoreBloc>().add(FetchStoreData(storeId));
+                        context.read<StoreBloc>().add(FetchStoreData(widget.storeId));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
@@ -132,7 +156,7 @@ class _StoreLocatorView extends StatelessWidget {
                     const SizedBox(height: 8),
                     OutlinedButton(
                       onPressed: () {
-                        final entryUrl = preferences.getString(StorageKeys.entryUrl);
+                        final entryUrl = widget.preferences.getString(StorageKeys.entryUrl);
                         if (entryUrl != null) {
                           context.go(entryUrl);
                         } else {
@@ -154,9 +178,17 @@ class _StoreLocatorView extends StatelessWidget {
           }
 
           if (state is StoreLoaded) {
+            print('[StoreLocator] StoreLoaded state received');
             // Automatically navigate to menu page when store data is loaded
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.go('/menu');
+            // Add small delay to ensure SharedPreferences is persisted
+            WidgetsBinding.instance.addPostFrameCallback((_) async {
+              print('[StoreLocator] Delaying for SharedPreferences persist');
+              // Ensure preferences are committed before navigation
+              await Future.delayed(const Duration(milliseconds: 100));
+              print('[StoreLocator] Navigating to /menu');
+              if (context.mounted) {
+                context.go('/menu');
+              }
             });
 
             // Show loading indicator while navigating

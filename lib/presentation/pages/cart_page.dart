@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import '../../data/repositories/cart_repository_impl.dart';
 import '../../data/models/cart_item_model.dart';
 import '../bloc/cart_bloc.dart';
 import '../bloc/cart_event.dart';
@@ -14,23 +12,9 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<SharedPreferences>(
-      future: SharedPreferences.getInstance(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        return BlocProvider(
-          create: (context) => CartBloc(
-            CartRepository(snapshot.data!),
-          )..add(LoadCart()),
-          child: const _CartPageView(),
-        );
-      },
-    );
+    // Cart is already loaded by MenuPage using global CartBloc
+    // No need to reload here - just display the current state
+    return const _CartPageView();
   }
 }
 

@@ -17,7 +17,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<UpdateCartItemQuantity>(_onUpdateCartItemQuantity);
     on<ClearCart>(_onClearCart);
     on<RefreshCart>(_onRefreshCart);
-    on<ValidateCartStore>(_onValidateCartStore);
   }
 
   /// Load cart from storage
@@ -27,14 +26,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         items: state.items,
         summary: state.summary,
       ));
-
-      // Validate cart belongs to current store before loading
-      if (!_repository.isCartValidForCurrentStore()) {
-        // Cart belongs to a different store, clear it
-        await _repository.clearCart();
-        emit(CartCleared());
-        return;
-      }
 
       final items = await _repository.loadCart();
       final summary = _calculateSummary(items);
@@ -88,9 +79,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
       final summary = _calculateSummary(updatedItems);
 
-      // Save to storage with current store ID
-      final currentStoreId = _repository.getCurrentStoreId();
-      await _repository.saveCart(updatedItems, storeId: currentStoreId);
+      // Save to storage
+      await _repository.saveCart(updatedItems);
 
       emit(CartItemAdded(
         addedItem: cartItem,
@@ -115,9 +105,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
           .toList();
       final summary = _calculateSummary(updatedItems);
 
-      // Save to storage with current store ID
-      final currentStoreId = _repository.getCurrentStoreId();
-      await _repository.saveCart(updatedItems, storeId: currentStoreId);
+      // Save to storage
+      await _repository.saveCart(updatedItems);
 
       emit(CartItemRemoved(
         removedItemId: event.cartItemId,
@@ -150,9 +139,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
       final summary = _calculateSummary(updatedItems);
 
-      // Save to storage with current store ID
-      final currentStoreId = _repository.getCurrentStoreId();
-      await _repository.saveCart(updatedItems, storeId: currentStoreId);
+      // Save to storage
+      await _repository.saveCart(updatedItems);
 
       emit(CartItemUpdated(
         updatedItemId: event.cartItemId,
@@ -191,23 +179,6 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   /// Validate cart belongs to current store
-  Future<void> _onValidateCartStore(
-      ValidateCartStore event, Emitter<CartState> emit) async {
-    try {
-      if (!_repository.isCartValidForCurrentStore()) {
-        // Cart belongs to a different store, clear it
-        await _repository.clearCart();
-        emit(CartCleared());
-      }
-    } catch (e) {
-      emit(CartError(
-        message: 'Failed to validate cart: $e',
-        items: state.items,
-        summary: state.summary,
-      ));
-    }
-  }
-
   /// Calculate cart summary
   CartSummary _calculateSummary(List<CartItem> items) {
     if (items.isEmpty) {

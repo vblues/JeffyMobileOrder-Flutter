@@ -1,6 +1,6 @@
 # Mobile Order Flutter Web App - Development Progress
 
-**Last Updated:** Build #79 (2025-10-16)
+**Last Updated:** Build #85 (2025-10-21)
 **Project:** Flutter Web Mobile Ordering Application
 **Repository:** `/var/www/mobileorder.jeffy.sg`
 **Production URL:** `https://mobileorderuat.jeffy.sg`
@@ -205,6 +205,42 @@ A Flutter web application for mobile food ordering, designed to replace/compleme
   - Standard Flutter navigation pattern
   - Minimal performance overhead
 
+### Phase 14: Payment & Checkout (Builds #80-84)
+- ✅ **Payment Infrastructure (Pre-existing):**
+  - PaymentBloc with state management (Equatable-based)
+  - PaymentRepository with order submission API
+  - Payment method selection (ID-based: 23=PAC, 60=Credit Card)
+  - Order request builder with cart items and sales type
+- ✅ **Payment Page UI (Build #84):**
+  - Sales type summary card (shows selected option and pickup time)
+  - Order total price display
+  - Payment method selection cards with icons:
+    - **Pay at Counter (ID 23)** - Primary MVP option
+    - **Pay by Credit Card (ID 60)** - Currently active and functional
+  - Payment methods loaded dynamically from store credentials
+  - Selection indicator with visual feedback
+  - Confirm button with loading state
+- ✅ **Order Submission Flow:**
+  - Submit order via `sendMobileOrder` API endpoint
+  - Build order request with single items and combo items
+  - Include sales type number (2=Pickup ASAP, 5=Pickup Scheduled, 3=Dine-in)
+  - Generate payment object with tender amount and method number
+  - Handle response with session ID and cloud order number
+- ✅ **Payment Success Handling:**
+  - For PAC: Immediate success after order submission
+  - Cart cleared automatically on success
+  - Success message with order number shown
+  - Navigation back to menu after successful order
+- ✅ **Payment Gateway Preparation (Credit Card):**
+  - Payment gateway integration ready but not tested
+  - Session ID received from API for gateway initialization
+  - Return URLs configured (`/processing`, `/payment-cancel`, `/payment-timeout`)
+  - Future: Will integrate Mastercard Payment Gateway
+- ✅ **Routing:**
+  - `/payment` route in GoRouter
+  - Navigation from sales type page → payment page
+  - Payment page → success (menu) or error handling
+
 ---
 
 ## 📁 Project Structure
@@ -225,6 +261,7 @@ lib/
 │   │   ├── cart_item_model.dart        # Cart models (CartItem, CartModifier, etc.)
 │   │   ├── combo_model.dart            # Combo activity models
 │   │   ├── menu_model.dart             # MenuCategory with subcategories
+│   │   ├── payment_model.dart          # Payment models (PaymentMethod, PaymentSelection)
 │   │   ├── product_model.dart          # Product with secure URLs & toJson
 │   │   ├── product_attribute_model.dart # Product attributes/modifiers
 │   │   ├── sales_type_model.dart       # Sales type (Dine In, Pick-Up) models
@@ -233,6 +270,7 @@ lib/
 │   └── repositories/
 │       ├── cart_repository_impl.dart   # Cart persistence with SharedPreferences
 │       ├── menu_repository_impl.dart   # Menu repository with caching
+│       ├── payment_repository_impl.dart # Payment & order submission
 │       └── store_repository_impl.dart  # Store repository with caching
 ├── presentation/
 │   ├── bloc/
@@ -242,6 +280,7 @@ lib/
 │   │   ├── menu_bloc.dart              # Menu state management
 │   │   ├── menu_event.dart             # Menu events
 │   │   ├── menu_state.dart             # Menu states
+│   │   ├── payment_bloc.dart           # Payment state management (combined file)
 │   │   ├── sales_type_bloc.dart        # Sales type selection state management
 │   │   ├── sales_type_event.dart       # Sales type events
 │   │   ├── sales_type_state.dart       # Sales type states
@@ -252,6 +291,7 @@ lib/
 │   │   ├── cart_page.dart              # Cart UI with item management
 │   │   ├── home_page.dart              # Landing page
 │   │   ├── menu_page.dart              # Menu with RouteAware for cart sync
+│   │   ├── payment_page.dart           # Payment method selection & order submission
 │   │   ├── product_detail_page.dart    # Product details with modifiers & combos
 │   │   ├── sales_type_page.dart        # Sales type selection (Dine In / Pick-Up)
 │   │   └── store_locator_page.dart     # Store information display
@@ -328,6 +368,10 @@ Home (/)
     → Store Info Display
       → Menu (/menu)
         → Product Detail
+          → Cart (/cart)
+            → Sales Type Selection (/sales-type)
+              → Payment (/payment)
+                → Order Success (back to /menu)
 ```
 
 ### Color Scheme
@@ -394,6 +438,9 @@ Home (/)
 | #77 | Revert to Separate | Reverted to separate CartBloc instances |
 | #78 | didChangeDependencies | Attempted lifecycle hook (didn't work) |
 | #79 | RouteObserver Fix | **Final solution: RouteObserver pattern for cart sync** |
+| #80-83 | (Reserved) | Builds reserved for testing/fixes |
+| #84 | Payment & Checkout | Payment page with PAC (Pay at Counter) - initial implementation |
+| #85 | Payment Fix | **Fixed payment methods not loading (changed source from storeCredentials to storeInfo)** |
 
 ---
 
@@ -404,9 +451,11 @@ Home (/)
 2. ~~**Product modifiers not handled**~~ - ✅ **COMPLETED** (Builds #23-42)
 3. ~~**Sales type selection**~~ - ✅ **COMPLETED** (Builds #50-53)
 4. ~~**Cart badges not clearing**~~ - ✅ **COMPLETED** (Build #79)
-5. **No payment integration** - Checkout flow incomplete
-6. **No authentication** - User login/signup not implemented
-7. **No order history** - Past orders not tracked
+5. ~~**Payment integration (PAC)**~~ - ✅ **COMPLETED** (Build #84)
+6. **Credit card payment** - Gateway integration ready but not tested
+7. **No authentication** - User login/signup not implemented (guest mode only)
+8. **No order history** - Past orders not tracked
+9. **No success page** - After payment, redirects to menu with snackbar
 
 ### CORS Notes
 - CORS issue with `oss.jeffy.sg` was **resolved by server team**
@@ -454,33 +503,40 @@ POST https://api.jeffy.sg/getProductByStore
    - ✅ Time picker with validation (not in past)
    - ✅ Default to current time + 30 minutes
 
-4. **Checkout Flow**
-   - Order summary page
-   - Payment method selection
-   - Order submission API
-   - Order confirmation page
+4. ~~**Checkout Flow (PAC)**~~ - ✅ **COMPLETED** (Build #84)
+   - ✅ Order summary on payment page
+   - ✅ Payment method selection
+   - ✅ Order submission API
+   - ✅ Pay at Counter (PAC) fully functional
+   - ⏳ Credit card gateway (ready, needs testing)
+
+5. **Order Success Page**
+   - Create dedicated success page with order details
+   - Show order number, pickup time, QR code
+   - "Track Order" button (future feature)
+   - "Back to Menu" button
 
 ### Medium Priority
-4. **User Authentication**
+6. **User Authentication**
    - Login/signup pages
    - OTP verification
    - User profile management
    - Store user token
 
-5. **Order History**
+7. **Order History**
    - Past orders API integration
    - Order history page
    - Order tracking
    - Reorder functionality
 
-6. **Additional Features**
+8. **Additional Features**
    - Table number input/selection
    - Delivery vs Dine-in selection
    - Special instructions for orders
    - Promo code support
 
 ### Low Priority
-7. **Polish & Optimization**
+9. **Polish & Optimization**
    - Loading skeletons instead of spinners
    - Image optimization/caching strategy
    - Performance improvements
@@ -501,10 +557,11 @@ POST https://api.jeffy.sg/getProductByStore
 - ✅ **Combo products** (Builds #38-42)
 - ✅ **Cart management** (Builds #43-49)
 - ✅ **Product customization** (in product detail page)
+- ✅ **Payment flow (PAC)** (Build #84)
+- ✅ **Order submission** (Build #84)
 
 ### Still in React App (Not Migrated)
-- ❌ Checkout flow
-- ❌ Payment integration
+- ❌ Credit card payment (gateway ready, needs testing)
 - ❌ User authentication
 - ❌ Order history
 - ❌ Redeemable products

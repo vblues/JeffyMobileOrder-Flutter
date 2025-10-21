@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import '../../data/models/cart_item_model.dart';
@@ -34,6 +35,10 @@ class SubmitOrder extends PaymentEvent {
 
   @override
   List<Object?> get props => [cartItems, salesTypeSelection, paymentMethodId];
+}
+
+class ResetPayment extends PaymentEvent {
+  const ResetPayment();
 }
 
 // States
@@ -83,14 +88,16 @@ class PaymentSubmitted extends PaymentState {
 
 class PaymentSuccess extends PaymentState {
   final String cloudOrderNumber;
+  final String? orderNumber; // Store order number
 
   const PaymentSuccess({
     required this.cloudOrderNumber,
+    this.orderNumber,
     int? paymentMethodId,
   }) : super(selectedPaymentMethod: paymentMethodId);
 
   @override
-  List<Object?> get props => [cloudOrderNumber, selectedPaymentMethod];
+  List<Object?> get props => [cloudOrderNumber, orderNumber, selectedPaymentMethod];
 }
 
 class PaymentError extends PaymentState {
@@ -110,6 +117,7 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
   PaymentBloc(this._repository) : super(const PaymentInitial()) {
     on<SelectPaymentMethod>(_onSelectPaymentMethod);
     on<SubmitOrder>(_onSubmitOrder);
+    on<ResetPayment>(_onResetPayment);
   }
 
   void _onSelectPaymentMethod(
@@ -135,38 +143,66 @@ class PaymentBloc extends Bloc<PaymentEvent, PaymentState> {
       // Check response
       final resultCode = response['result_code']?.toString() ?? '500';
       if (resultCode != '200') {
-        final errorMsg = response['desc']?.toString() ?? 'Order submission failed';
+        // Use displaymsg if available, otherwise use desc
+        String errorMsg = response['displaymsg']?.toString() ??
+                         response['desc']?.toString() ??
+                         'Order submission failed';
+
+        // Parse store_response if available to get more details
+        final storeResponse = response['store_response']?.toString();
+        if (storeResponse != null && storeResponse.isNotEmpty) {
+          try {
+            final storeData = json.decode(storeResponse);
+            final storeMessage = storeData['Response']?['Message']?.toString();
+            if (storeMessage != null && storeMessage.isNotEmpty) {
+              errorMsg = '$errorMsg\n\nStore: $storeMessage';
+            }
+          } catch (e) {
+            // Ignore JSON parsing errors
+          }
+        }
+
         emit(PaymentError(errorMsg, event.paymentMethodId));
         return;
       }
 
       final sessionId = response['sessionID']?.toString() ?? '';
       final cloudOrderNumber = response['cloud_order_number']?.toString() ?? '';
+      final orderNumber = response['order_number']?.toString();
 
-      // Check if payment method requires gateway (credit card)
-      final requiresGateway = event.paymentMethodId == 60;
+      // Check if payment method requires gateway (credit card = pay_code 2013)
+      final requiresGateway = event.paymentMethodId == 2013;
 
       if (requiresGateway && sessionId.isEmpty) {
         emit(PaymentError('No session ID received for payment gateway', event.paymentMethodId));
         return;
       }
 
-      emit(PaymentSubmitted(
-        sessionId: sessionId,
-        cloudOrderNumber: cloudOrderNumber,
-        requiresGateway: requiresGateway,
-        paymentMethodId: event.paymentMethodId,
-      ));
-
-      // For pay at counter (ID 23 or 999), order is complete immediately
-      if (event.paymentMethodId == 23 || event.paymentMethodId == 999) {
+      // For pay at counter (pay_code 999), order is complete immediately
+      if (event.paymentMethodId == 999) {
         emit(PaymentSuccess(
           cloudOrderNumber: cloudOrderNumber,
+          orderNumber: orderNumber,
+          paymentMethodId: event.paymentMethodId,
+        ));
+      } else {
+        // For credit card, need to show payment gateway
+        emit(PaymentSubmitted(
+          sessionId: sessionId,
+          cloudOrderNumber: cloudOrderNumber,
+          requiresGateway: requiresGateway,
           paymentMethodId: event.paymentMethodId,
         ));
       }
     } catch (e) {
       emit(PaymentError(e.toString(), event.paymentMethodId));
     }
+  }
+
+  void _onResetPayment(
+    ResetPayment event,
+    Emitter<PaymentState> emit,
+  ) {
+    emit(const PaymentInitial());
   }
 }

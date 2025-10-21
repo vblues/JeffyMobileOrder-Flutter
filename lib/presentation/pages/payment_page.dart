@@ -4,11 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/storage_keys.dart';
+import '../../core/utils/notification_helper.dart';
 import '../../data/models/cart_item_model.dart';
 import '../../data/models/sales_type_model.dart';
 import '../../data/models/store_info_model.dart';
 import '../../data/repositories/payment_repository_impl.dart';
 import '../bloc/payment_bloc.dart';
+import '../bloc/cart_bloc.dart';
+import '../bloc/cart_event.dart';
 
 class PaymentPage extends StatelessWidget {
   const PaymentPage({super.key});
@@ -44,12 +47,22 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
     _loadData();
   }
 
-  Future<void> _clearCart() async {
+  Future<void> _clearOrderState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      // Clear all order-related state
       await prefs.remove(StorageKeys.cart);
+      await prefs.remove(StorageKeys.salesTypeSelection);
+
+      // Reset blocs to initial state
+      if (mounted) {
+        // Clear cart bloc - this will update all UI badges immediately
+        context.read<CartBloc>().add(ClearCart());
+        // Reset payment bloc
+        context.read<PaymentBloc>().add(const ResetPayment());
+      }
     } catch (e) {
-      // Ignore errors when clearing cart
+      // Ignore errors when clearing state
     }
   }
 
@@ -75,10 +88,10 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
         );
       }
 
-      // Load payment methods from stored credentials
-      final storeCredentialsJson = prefs.getString(StorageKeys.storeCredentials);
-      if (storeCredentialsJson != null) {
-        final storeData = json.decode(storeCredentialsJson) as Map<String, dynamic>;
+      // Load payment methods from store info
+      final storeInfoJson = prefs.getString(StorageKeys.storeInfo);
+      if (storeInfoJson != null) {
+        final storeData = json.decode(storeInfoJson) as Map<String, dynamic>;
         final payTypeList = storeData['payTypeInfo'] as List<dynamic>?;
         if (payTypeList != null) {
           _paymentMethods = payTypeList
@@ -121,10 +134,18 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
           : BlocConsumer<PaymentBloc, PaymentState>(
               listener: (context, state) {
                 if (state is PaymentError) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                  // Show error dialog for better visibility
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Order Failed'),
                       content: Text(state.message),
-                      backgroundColor: Colors.red,
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: const Text('OK'),
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -139,15 +160,55 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
                 }
 
                 if (state is PaymentSuccess) {
-                  // Clear cart manually since we don't have CartBloc here
-                  _clearCart();
-                  // Navigate to success page (placeholder for now)
-                  context.go('/menu');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Order placed successfully! Order #: ${state.cloudOrderNumber}'),
-                      backgroundColor: Colors.green,
-                      duration: const Duration(seconds: 5),
+                  // Clear all order state (cart, sales type, payment)
+                  _clearOrderState();
+
+                  // Use store order number if available, otherwise use cloud order number
+                  final displayOrderNumber = state.orderNumber?.isNotEmpty == true
+                      ? state.orderNumber!
+                      : state.cloudOrderNumber;
+
+                  // Show browser notification
+                  NotificationHelper.showOrderSuccessNotification(
+                    orderNumber: displayOrderNumber,
+                  );
+
+                  // Show success dialog
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Order Successful'),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Please proceed to the counter for payment.',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text('Your order is not confirmed until payment is received.'),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Order Number: $displayOrderNumber',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            context.go('/menu');
+                          },
+                          child: const Text('OK'),
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -387,11 +448,19 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
                         return;
                       }
 
+                      // Find the selected payment method to get its pay_code
+                      final selectedMethod = _paymentMethods.firstWhere(
+                        (m) => m.id == state.selectedPaymentMethod,
+                      );
+
+                      // Convert pay_code to int
+                      final paymentCode = int.parse(selectedMethod.payCode);
+
                       context.read<PaymentBloc>().add(
                             SubmitOrder(
                               cartItems: _cartItems,
                               salesTypeSelection: _salesTypeSelection!,
-                              paymentMethodId: state.selectedPaymentMethod!,
+                              paymentMethodId: paymentCode,  // Use pay_code instead of id
                             ),
                           );
                     }

@@ -22,7 +22,7 @@ class PaymentRepository {
     String? tableSessionId,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final storeId = prefs.getInt(StorageKeys.storeId) ?? 0;
+    final storeId = _getStoreId(prefs);
 
     // Get credentials
     final credentials = await _getCredentials();
@@ -52,7 +52,7 @@ class PaymentRepository {
     required String resultIndicator,
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final storeId = prefs.getInt(StorageKeys.storeId) ?? 0;
+    final storeId = _getStoreId(prefs);
 
     final credentials = await _getCredentials();
 
@@ -115,11 +115,18 @@ class PaymentRepository {
       // Make API call
       final url = '${credentials.apiDomain}/$endpoint';
 
+      print('[PaymentRepository] Sending request to: $url');
+      print('[PaymentRepository] Headers: $headers');
+      print('[PaymentRepository] Body: $bodyJson');
+
       final response = await _dio.post(
         url,
         data: bodyJson,
         options: Options(headers: headers),
       );
+
+      print('[PaymentRepository] Response status: ${response.statusCode}');
+      print('[PaymentRepository] Response data: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
@@ -141,6 +148,11 @@ class PaymentRepository {
     required int paymentMethodId,
     String? tableSessionId,
   }) {
+    print('[PaymentRepository] Building order request...');
+    print('[PaymentRepository] Cart items count: ${cartItems.length}');
+    print('[PaymentRepository] Store ID: $storeId');
+    print('[PaymentRepository] Payment method ID: $paymentMethodId');
+
     // Separate combo and single items
     final List<Map<String, dynamic>> singleItems = [];
     final List<Map<String, dynamic>> comboItems = [];
@@ -148,17 +160,24 @@ class PaymentRepository {
     double totalPrice = 0.0;
 
     for (final cartItem in cartItems) {
+      print('[PaymentRepository] Processing cart item: ${cartItem.product.productName}');
       final itemTotal = cartItem.totalPrice;
       totalPrice += itemTotal;
 
       if (cartItem.comboItems.isNotEmpty) {
         // Combo item
+        print('[PaymentRepository] Item is combo');
         comboItems.add(_buildComboItem(cartItem));
       } else {
         // Single item
+        print('[PaymentRepository] Item is single');
         singleItems.add(_buildSingleItem(cartItem));
       }
     }
+
+    print('[PaymentRepository] Single items count: ${singleItems.length}');
+    print('[PaymentRepository] Combo items count: ${comboItems.length}');
+    print('[PaymentRepository] Total price: \$${totalPrice.toStringAsFixed(2)}');
 
     // Get base URL for return URLs
     final baseUrl = Uri.base.origin;
@@ -197,38 +216,35 @@ class PaymentRepository {
       if (tableSessionId != null) 'tablesessionid': tableSessionId,
     };
 
-    return {
+    final orderRequest = {
       'request': {
         'transaction': transaction,
       },
     };
+
+    print('[PaymentRepository] Final order request: ${json.encode(orderRequest)}');
+
+    return orderRequest;
   }
 
   /// Build single item object
   Map<String, dynamic> _buildSingleItem(CartItem cartItem) {
     final item = {
-      'mainproduct': cartItem.product.productSn,
+      'prodNum': cartItem.product.productSn,  // Changed from 'mainproduct' to 'prodNum'
       'quantity': cartItem.quantity,
       'costEach': cartItem.product.price,
+      'Modifiers': [],  // Changed from 'subproducts' to 'Modifiers' array
     };
 
     // Add modifiers if any
     if (cartItem.modifiers.isNotEmpty) {
-      final subproducts = cartItem.modifiers.map((modifier) {
+      item['Modifiers'] = cartItem.modifiers.map((modifier) {
         return {
           'subproduct': modifier.attValSn,
           'quantity': 1,
           'price': modifier.price.toStringAsFixed(2),
         };
       }).toList();
-
-      item['subproducts'] = {
-        'subproduct': subproducts,
-      };
-    } else {
-      item['subproducts'] = {
-        'subproduct': [],
-      };
     }
 
     return item;
@@ -273,5 +289,30 @@ class PaymentRepository {
           return 5; // Pickup scheduled
         }
     }
+  }
+
+  /// Helper to get store ID handling both int and string storage
+  int _getStoreId(SharedPreferences prefs) {
+    // Try to get as int first
+    try {
+      final intValue = prefs.getInt(StorageKeys.storeId);
+      if (intValue != null) {
+        return intValue;
+      }
+    } catch (e) {
+      // getInt() throws if stored as string
+    }
+
+    // Fallback: try to get as string and parse
+    try {
+      final stringValue = prefs.getString(StorageKeys.storeId);
+      if (stringValue != null) {
+        return int.parse(stringValue);
+      }
+    } catch (e) {
+      // Failed to parse string
+    }
+
+    return 0; // Default fallback
   }
 }

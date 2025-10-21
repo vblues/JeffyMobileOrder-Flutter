@@ -18,20 +18,26 @@ class StoreRepository {
   /// This is the complete flow: locateStoreById → getStoreByDeviceNo
   Future<StoreInfoResponse> fetchStoreData(String storeId) async {
     try {
+      print('[StoreRepository] fetchStoreData starting for storeId: $storeId');
+
       // Step 1: Locate store to get API credentials
       final credentials = await remoteDataSource.locateStoreById(storeId);
+      print('[StoreRepository] Got credentials: ${credentials.deviceId}');
 
       // Cache credentials
       await _saveCredentials(credentials);
+      print('[StoreRepository] Credentials saved');
 
       // Step 2: Get store info using credentials
       final storeInfo = await remoteDataSource.getStoreByDeviceNo(
         credentials: credentials,
         deviceNo: credentials.deviceId,
       );
+      print('[StoreRepository] Got store info: ${storeInfo.storeInfos.length} stores');
 
       // Cache store info
       await _saveStoreInfo(storeInfo);
+      print('[StoreRepository] Store info saved');
 
       // Cache store ID
       if (storeInfo.storeInfos.isNotEmpty) {
@@ -39,10 +45,13 @@ class StoreRepository {
           StorageKeys.storeId,
           storeInfo.storeInfos.first.storeId.toString(),
         );
+        print('[StoreRepository] Store ID saved: ${storeInfo.storeInfos.first.storeId}');
       }
 
+      print('[StoreRepository] fetchStoreData complete');
       return storeInfo;
     } catch (e) {
+      print('[StoreRepository] fetchStoreData error: $e');
       rethrow;
     }
   }
@@ -82,9 +91,33 @@ class StoreRepository {
   }
 
   Future<void> _saveStoreInfo(StoreInfoResponse storeInfo) async {
-    // Save the full store info as JSON
+    // Save the full store info as JSON including payment methods from store_note
     if (storeInfo.storeInfos.isNotEmpty) {
       final storeData = storeInfo.storeInfos.first;
+
+      // Parse store_note to extract PayType
+      List<Map<String, dynamic>> payTypeInfo = [];
+      try {
+        if (storeData.storeNote.isNotEmpty) {
+          final storeNoteData = json.decode(storeData.storeNote) as Map<String, dynamic>;
+          final payTypeList = storeNoteData['PayType'] as List<dynamic>?;
+          if (payTypeList != null) {
+            payTypeInfo = payTypeList.map((item) {
+              final payTypeItem = item as Map<String, dynamic>;
+              return {
+                'id': payTypeItem['id'],
+                'pay_code': payTypeItem['pay_code'],
+                // Add a friendly name based on ID
+                'pay_name': payTypeItem['id'] == 23 ? 'Pay at Counter' :
+                           payTypeItem['id'] == 60 ? 'Credit Card' : 'Payment',
+              };
+            }).toList();
+          }
+        }
+      } catch (e) {
+        print('[StoreRepository] Error parsing PayType from store_note: $e');
+      }
+
       final jsonData = {
         'id': storeData.storeId,
         'store_name': storeData.storeName, // Raw JSON string
@@ -94,6 +127,8 @@ class StoreRepository {
         'logo_url': storeData.logoUrl,
         'street': storeData.street,
         'contact_phone': storeData.contactPhone,
+        // Include payment methods parsed from store_note
+        'payTypeInfo': payTypeInfo,
       };
       await sharedPreferences.setString(
         StorageKeys.storeInfo,
