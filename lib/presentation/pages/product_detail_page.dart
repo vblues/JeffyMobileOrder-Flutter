@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../data/models/product_model.dart';
 import '../../data/models/product_attribute_model.dart';
 import '../../data/models/combo_model.dart';
+import '../../data/models/cart_item_model.dart';
 import '../bloc/cart_bloc.dart';
 import '../bloc/cart_event.dart';
 import '../bloc/cart_state.dart';
@@ -15,6 +16,7 @@ class ProductDetailPage extends StatefulWidget {
   final List<ComboCategory> comboCategories;
   final Map<int, Product> comboProductsMap;
   final Map<int, List<ProductAttribute>> productAttributesMap;
+  final CartItem? cartItemToEdit; // For edit mode
 
   const ProductDetailPage({
     super.key,
@@ -23,6 +25,7 @@ class ProductDetailPage extends StatefulWidget {
     this.comboCategories = const [],
     this.comboProductsMap = const {},
     this.productAttributesMap = const {},
+    this.cartItemToEdit,
   });
 
   @override
@@ -39,12 +42,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   // Track selected combos: categoryTypeNameSn -> List<SelectedComboItem>
   final Map<String, List<SelectedComboItem>> _selectedCombos = {};
 
+  /// Check if we're in edit mode
+  bool get isEditMode => widget.cartItemToEdit != null;
+
   @override
   void initState() {
     super.initState();
     _totalPrice = widget.product.priceValue;
-    _initializeDefaultModifiers();
-    _initializeDefaultCombos();
+
+    if (isEditMode) {
+      // Load existing selections from cart item
+      _initializeFromCartItem();
+    } else {
+      // Initialize with defaults
+      _initializeDefaultModifiers();
+      _initializeDefaultCombos();
+    }
   }
 
   /// Initialize default modifiers based on default_choose flag
@@ -88,6 +101,69 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         }
       }
     }
+    _recalculatePrice();
+  }
+
+  /// Initialize from existing cart item (for edit mode)
+  void _initializeFromCartItem() {
+    final cartItem = widget.cartItemToEdit!;
+
+    // Rebuild modifiers map from cart modifiers
+    for (final attribute in widget.attributes) {
+      final matchingModifiers = cartItem.modifiers
+          .where((mod) => mod.attId == attribute.attId)
+          .map((mod) {
+            // Find the matching AttributeValue
+            return attribute.values.firstWhere(
+              (val) => val.attValId == mod.attValId,
+              orElse: () => AttributeValue(
+                attValName: mod.attValName,
+                attValId: mod.attValId,
+                price: mod.price.toString(),
+                defaultChoose: 0,
+                attValSn: mod.attValSn,
+                minNum: 0,
+                maxNum: 1,
+                sort: 0,
+              ),
+            );
+          })
+          .toList();
+
+      _selectedModifiers[attribute.attId] = matchingModifiers;
+    }
+
+    // Rebuild combos map from cart combo items
+    for (final category in widget.comboCategories) {
+      final matchingCombos = cartItem.comboItems
+          .where((comboItem) =>
+              comboItem.categoryTypeNameSn.toString() == category.typeNameSn ||
+              comboItem.categoryName == category.typeNameEn)
+          .map((comboItem) {
+            return SelectedComboItem(
+              categoryTypeNameSn: comboItem.categoryTypeNameSn,
+              categoryName: comboItem.categoryName,
+              productId: comboItem.productId,
+              productSn: comboItem.productSn,
+              productName: comboItem.productName,
+              priceAdjustment: comboItem.priceAdjustment,
+              modifiers: comboItem.modifiers.map((mod) {
+                return ComboModifier(
+                  attId: mod.attId,
+                  attName: mod.attName,
+                  attValId: mod.attValId,
+                  attValName: mod.attValName,
+                  attValSn: mod.attValSn,
+                  price: mod.price,
+                );
+              }).toList(),
+            );
+          })
+          .toList();
+
+      _selectedCombos[category.typeNameSn] = matchingCombos;
+    }
+
     _recalculatePrice();
   }
 
@@ -170,7 +246,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Details'),
+        title: Text(isEditMode ? 'Edit Item' : 'Product Details'),
         backgroundColor: Theme.of(context).colorScheme.primary,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -308,35 +384,55 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     ),
                     const SizedBox(height: 16),
 
-                    // Add to cart button
+                    // Add to cart or Update item button
                     SizedBox(
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
                         onPressed: _areAllMandatoryModifiersSelected()
                             ? () {
-                                // Add to cart
-                                context.read<CartBloc>().add(
-                                      AddToCart(
-                                        product: widget.product,
-                                        quantity: _quantity,
-                                        selectedModifiers: _selectedModifiers,
-                                        selectedCombos: _selectedCombos,
-                                      ),
-                                    );
+                                if (isEditMode) {
+                                  // Update existing cart item
+                                  context.read<CartBloc>().add(
+                                        UpdateCartItem(
+                                          cartItemId: widget.cartItemToEdit!.id,
+                                          selectedModifiers: _selectedModifiers,
+                                          selectedCombos: _selectedCombos,
+                                        ),
+                                      );
 
-                                // Show success message
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      'Added $_quantity x ${widget.product.productNameEn} to cart',
+                                  // Show success message
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Item updated successfully'),
+                                      duration: Duration(seconds: 2),
+                                      backgroundColor: Colors.green,
                                     ),
-                                    duration: const Duration(seconds: 2),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
+                                  );
+                                } else {
+                                  // Add to cart
+                                  context.read<CartBloc>().add(
+                                        AddToCart(
+                                          product: widget.product,
+                                          quantity: _quantity,
+                                          selectedModifiers: _selectedModifiers,
+                                          selectedCombos: _selectedCombos,
+                                        ),
+                                      );
 
-                                // Navigate back to menu
+                                  // Show success message
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Added $_quantity x ${widget.product.productNameEn} to cart',
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+
+                                // Navigate back
                                 context.pop();
                               }
                             : null,
@@ -348,7 +444,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         ),
                         child: Text(
                           _areAllMandatoryModifiersSelected()
-                              ? 'Add to Cart'
+                              ? (isEditMode ? 'Update Item' : 'Add to Cart')
                               : 'Complete Selections Above',
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),

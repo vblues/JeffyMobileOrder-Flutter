@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -10,7 +11,13 @@ import 'presentation/pages/sales_type_page.dart';
 import 'presentation/pages/payment_page.dart';
 import 'presentation/pages/order_history_page.dart';
 import 'presentation/bloc/cart_bloc.dart';
+import 'presentation/bloc/menu_bloc.dart';
+import 'presentation/bloc/menu_event.dart';
 import 'data/repositories/cart_repository_impl.dart';
+import 'data/repositories/menu_repository_impl.dart';
+import 'data/datasources/menu_remote_datasource.dart';
+import 'data/models/store_credentials_model.dart';
+import 'core/constants/storage_keys.dart';
 
 // Global RouteObserver for navigation tracking
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
@@ -20,11 +27,48 @@ class MobileOrderApp extends StatelessWidget {
 
   const MobileOrderApp({super.key, required this.sharedPreferences});
 
+  MenuBloc? _createMenuBlocIfCredentialsExist() {
+    try {
+      final credentialsJson = sharedPreferences.getString(StorageKeys.storeCredentials);
+      final storeInfoJson = sharedPreferences.getString(StorageKeys.storeInfo);
+
+      if (credentialsJson == null || storeInfoJson == null) {
+        return null;
+      }
+
+      final credentials = StoreCredentialsModel.fromJsonString(credentialsJson);
+      final storeInfoData = json.decode(storeInfoJson) as Map<String, dynamic>;
+      final storeId = storeInfoData['store_id'] as int? ?? 0;
+
+      return MenuBloc(
+        menuRepository: MenuRepository(
+          remoteDataSource: MenuRemoteDataSource(),
+          sharedPreferences: sharedPreferences,
+        ),
+        credentials: credentials,
+        storeId: storeId,
+      )..add(LoadMenu());
+    } catch (e) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      // Global CartBloc shared across all pages
-      create: (context) => CartBloc(CartRepository(sharedPreferences)),
+    final menuBloc = _createMenuBlocIfCredentialsExist();
+
+    return MultiBlocProvider(
+      providers: [
+        // Global CartBloc shared across all pages
+        BlocProvider<CartBloc>(
+          create: (context) => CartBloc(CartRepository(sharedPreferences)),
+        ),
+        // Global MenuBloc - available if credentials exist
+        if (menuBloc != null)
+          BlocProvider<MenuBloc>.value(
+            value: menuBloc,
+          ),
+      ],
       child: MaterialApp.router(
         title: 'Mobile Order',
         debugShowCheckedModeBanner: false,

@@ -15,6 +15,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<AddToCart>(_onAddToCart);
     on<RemoveFromCart>(_onRemoveFromCart);
     on<UpdateCartItemQuantity>(_onUpdateCartItemQuantity);
+    on<UpdateCartItem>(_onUpdateCartItem);
     on<ClearCart>(_onClearCart);
     on<RefreshCart>(_onRefreshCart);
     on<AddCartItems>(_onAddCartItems);
@@ -146,6 +147,72 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       emit(CartItemUpdated(
         updatedItemId: event.cartItemId,
         newQuantity: event.newQuantity,
+        items: updatedItems,
+        summary: summary,
+      ));
+    } catch (e) {
+      emit(CartError(
+        message: 'Failed to update cart item: $e',
+        items: state.items,
+        summary: state.summary,
+      ));
+    }
+  }
+
+  /// Update cart item's modifiers and combos
+  Future<void> _onUpdateCartItem(
+      UpdateCartItem event, Emitter<CartState> emit) async {
+    try {
+      // Find the cart item to update
+      final itemToUpdate = state.items.firstWhere(
+        (item) => item.id == event.cartItemId,
+        orElse: () => throw Exception('Cart item not found'),
+      );
+
+      // Create cart modifiers from selected modifiers
+      final List<CartModifier> cartModifiers = [];
+      event.selectedModifiers.forEach((attId, values) {
+        for (final value in values) {
+          final modifier = CartModifier.fromAttributeValue(
+            attId,
+            'Modifier $attId', // Attribute name - will be overridden by UI context
+            value,
+          );
+          cartModifiers.add(modifier);
+        }
+      });
+
+      // Create cart combo items from selected combos
+      final List<CartComboItem> cartComboItems = [];
+      event.selectedCombos.forEach((category, items) {
+        for (final item in items) {
+          final comboItem = CartComboItem.fromSelectedComboItem(item);
+          cartComboItems.add(comboItem);
+        }
+      });
+
+      // Update the item with new modifiers and combos (keeping same quantity)
+      final updatedItem = itemToUpdate.copyWith(
+        modifiers: cartModifiers,
+        comboItems: cartComboItems,
+      );
+
+      // Replace the item in the list
+      final updatedItems = state.items.map((item) {
+        if (item.id == event.cartItemId) {
+          return updatedItem;
+        }
+        return item;
+      }).toList();
+
+      final summary = _calculateSummary(updatedItems);
+
+      // Save to storage
+      await _repository.saveCart(updatedItems);
+
+      emit(CartItemUpdated(
+        updatedItemId: event.cartItemId,
+        newQuantity: updatedItem.quantity,
         items: updatedItems,
         summary: summary,
       ));

@@ -26,93 +26,128 @@ class MenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<SharedPreferences>( future: SharedPreferences.getInstance(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+    // Try to use global MenuBloc if available
+    try {
+      final menuBloc = context.read<MenuBloc>();
+      // Global MenuBloc exists, extract store info and use it
+      return FutureBuilder<SharedPreferences>(
+        future: SharedPreferences.getInstance(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-        // Load store credentials from cache
-        final credentialsJson = snapshot.data!.getString(StorageKeys.storeCredentials);
-        final storeInfoJson = snapshot.data!.getString(StorageKeys.storeInfo);
+          final storeInfoJson = snapshot.data!.getString(StorageKeys.storeInfo);
+          if (storeInfoJson == null) {
+            return _buildNoStoreDataScaffold(context);
+          }
 
+          final storeInfoData = json.decode(storeInfoJson) as Map<String, dynamic>;
+          final storeName = _extractStoreName(storeInfoData);
+          final brandColor = _extractBrandColor(storeInfoData);
 
-        if (credentialsJson == null || storeInfoJson == null) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Menu'),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-            ),
-            body: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.qr_code_scanner,
-                      size: 80,
-                      color: Colors.orange[700],
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'No Store Data Found',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Please scan a QR code at your table or counter to view the menu.',
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => context.go('/'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                      ),
-                      child: const Text('Go to Home'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }
-
-        // Parse credentials and store info from JSON
-        final credentials = StoreCredentialsModel.fromJsonString(credentialsJson);
-        final storeInfoData = json.decode(storeInfoJson) as Map<String, dynamic>;
-        final storeId = storeInfoData['store_id'] as int? ?? 0;
-
-        // Extract store name and brand color
-        final storeName = _extractStoreName(storeInfoData);
-        final brandColor = _extractBrandColor(storeInfoData);
-
-        return BlocProvider(
-          create: (context) => MenuBloc(
-            menuRepository: MenuRepository(
-              remoteDataSource: MenuRemoteDataSource(),
-              sharedPreferences: snapshot.data!,
-            ),
-            credentials: credentials,
-            storeId: storeId,
-          )..add(LoadMenu()),
-          child: _MenuPageView(
+          return _MenuPageView(
             storeName: storeName,
             brandColor: brandColor,
+          );
+        },
+      );
+    } catch (e) {
+      // Global MenuBloc not available, create local one
+      return FutureBuilder<SharedPreferences>(
+        future: SharedPreferences.getInstance(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
+          // Load store credentials from cache
+          final credentialsJson = snapshot.data!.getString(StorageKeys.storeCredentials);
+          final storeInfoJson = snapshot.data!.getString(StorageKeys.storeInfo);
+
+          if (credentialsJson == null || storeInfoJson == null) {
+            return _buildNoStoreDataScaffold(context);
+          }
+
+          // Parse credentials and store info from JSON
+          final credentials = StoreCredentialsModel.fromJsonString(credentialsJson);
+          final storeInfoData = json.decode(storeInfoJson) as Map<String, dynamic>;
+          final storeId = storeInfoData['store_id'] as int? ?? 0;
+
+          // Extract store name and brand color
+          final storeName = _extractStoreName(storeInfoData);
+          final brandColor = _extractBrandColor(storeInfoData);
+
+          return BlocProvider(
+            create: (context) => MenuBloc(
+              menuRepository: MenuRepository(
+                remoteDataSource: MenuRemoteDataSource(),
+                sharedPreferences: snapshot.data!,
+              ),
+              credentials: credentials,
+              storeId: storeId,
+            )..add(LoadMenu()),
+            child: _MenuPageView(
+              storeName: storeName,
+              brandColor: brandColor,
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  Widget _buildNoStoreDataScaffold(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Menu'),
+        backgroundColor: Theme.of(context).colorScheme.primary,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.qr_code_scanner,
+                size: 80,
+                color: Colors.orange[700],
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No Store Data Found',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Please scan a QR code at your table or counter to view the menu.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => context.go('/'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 16,
+                  ),
+                ),
+                child: const Text('Go to Home'),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

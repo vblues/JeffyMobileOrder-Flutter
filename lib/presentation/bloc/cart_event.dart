@@ -57,3 +57,16 @@ class AddCartItems extends CartEvent {
 
   AddCartItems(this.items);
 }
+
+/// Update an existing cart item's modifiers and combos
+class UpdateCartItem extends CartEvent {
+  final String cartItemId;
+  final Map<int, List<AttributeValue>> selectedModifiers;
+  final Map<String, List<SelectedComboItem>> selectedCombos;
+
+  UpdateCartItem({
+    required this.cartItemId,
+    this.selectedModifiers = const {},
+    this.selectedCombos = const {},
+  });
+}

@@ -5,7 +5,10 @@ import '../../data/models/cart_item_model.dart';
 import '../bloc/cart_bloc.dart';
 import '../bloc/cart_event.dart';
 import '../bloc/cart_state.dart';
+import '../bloc/menu_bloc.dart';
+import '../bloc/menu_state.dart';
 import '../widgets/web_safe_image.dart';
+import 'product_detail_page.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -207,6 +210,13 @@ class _CartPageView extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+                // Edit button
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                  onPressed: () {
+                    _navigateToEditItem(context, cartItem);
+                  },
                 ),
                 // Delete button
                 IconButton(
@@ -524,5 +534,65 @@ class _CartPageView extends StatelessWidget {
         );
       },
     );
+  }
+
+  void _navigateToEditItem(BuildContext context, CartItem cartItem) {
+    // Get MenuBloc from global context
+    try {
+      final menuBloc = context.read<MenuBloc>();
+      final menuState = menuBloc.state;
+
+      if (menuState is! MenuLoaded) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Menu is still loading. Please try again.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Get product attributes and combo categories
+      final attributes = menuState.getProductAttributes(cartItem.product.productId);
+      final comboCategories = menuState.getSelectableComboCategories(cartItem.product.productId);
+      final comboProductsMap = menuState.comboProductsMap;
+      final productAttributesMap = menuState.productAttributes;
+
+      // Get CartBloc from context
+      final cartBloc = context.read<CartBloc>();
+
+      // Navigate to ProductDetailPage in edit mode
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: cartBloc),
+              BlocProvider.value(value: menuBloc),
+            ],
+            child: ProductDetailPage(
+              product: cartItem.product,
+              attributes: attributes,
+              comboCategories: comboCategories,
+              comboProductsMap: comboProductsMap,
+              productAttributesMap: productAttributesMap,
+              cartItemToEdit: cartItem,
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      // MenuBloc not available - guide user to menu page
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please visit the menu page first to enable editing'),
+          action: SnackBarAction(
+            label: 'Go to Menu',
+            onPressed: () => context.go('/menu'),
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 }
