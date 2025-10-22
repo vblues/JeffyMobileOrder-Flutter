@@ -58,9 +58,14 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
     final screenSize = MediaQuery.of(context).size;
     final isDesktop = screenSize.width > 600;
     final isMobile = screenSize.width < 400;
+    final isVerySmall = screenSize.width <= 380;
 
-    // Calculate appropriate dialog width
-    final dialogWidth = isDesktop ? 420.0 : (isMobile ? screenSize.width * 0.9 : 360.0);
+    // Calculate appropriate dialog width - use more space on very small screens
+    final dialogWidth = isDesktop
+        ? 420.0
+        : (isVerySmall
+            ? screenSize.width * 0.95  // 95% for very small screens
+            : (isMobile ? screenSize.width * 0.92 : 360.0));
 
     return Dialog(
       shape: RoundedRectangleBorder(
@@ -73,7 +78,7 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
         ),
         child: SingleChildScrollView(
           child: Padding(
-            padding: EdgeInsets.all(isDesktop ? 24.0 : 20.0),
+            padding: EdgeInsets.all(isDesktop ? 24.0 : (isVerySmall ? 16.0 : 20.0)),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -115,7 +120,7 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
 
                 // Display
                 Container(
-                  height: isDesktop ? 80 : 70,
+                  height: isDesktop ? 80 : (isVerySmall ? 60 : 70),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(12),
@@ -129,18 +134,22 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
                       _pagerNumber.isEmpty ? '---' : _pagerNumber.padRight(3, '_'),
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 16,
+                            letterSpacing: isVerySmall ? 12 : 16,
                             color: Theme.of(context).colorScheme.primary,
-                            fontSize: isDesktop ? 36 : 32,
+                            fontSize: isDesktop ? 36 : (isVerySmall ? 28 : 32),
                           ),
                     ),
                   ),
                 ),
-                SizedBox(height: isDesktop ? 20 : 16),
+                SizedBox(height: isDesktop ? 20 : (isVerySmall ? 12 : 16)),
 
-                // Number pad
-                _buildNumberPad(dialogWidth, isDesktop),
-                SizedBox(height: isDesktop ? 24 : 20),
+                // Number pad - use LayoutBuilder to get actual available width
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return _buildNumberPad(constraints.maxWidth, isDesktop, isVerySmall);
+                  },
+                ),
+                SizedBox(height: isDesktop ? 24 : (isVerySmall ? 12 : 20)),
 
                 // Action buttons
                 Row(
@@ -149,7 +158,7 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
                       child: OutlinedButton(
                         onPressed: _onClear,
                         style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
+                          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : (isVerySmall ? 12 : 14)),
                           side: BorderSide(
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -163,7 +172,7 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
                       child: ElevatedButton(
                         onPressed: _pagerNumber.isNotEmpty ? _onConfirm : null,
                         style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : 14),
+                          padding: EdgeInsets.symmetric(vertical: isDesktop ? 16 : (isVerySmall ? 12 : 14)),
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
                           disabledBackgroundColor: Colors.grey[300],
@@ -181,13 +190,11 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
     );
   }
 
-  Widget _buildNumberPad(double dialogWidth, bool isDesktop) {
-    // Calculate button size based on available width
-    final horizontalPadding = isDesktop ? 48.0 : 40.0;
-    final availableWidth = dialogWidth - horizontalPadding;
-    final buttonSpacing = isDesktop ? 12.0 : 10.0;
+  Widget _buildNumberPad(double availableWidth, bool isDesktop, bool isVerySmall) {
+    // Calculate button size based on available width (already inside padding)
+    final buttonSpacing = isDesktop ? 12.0 : (isVerySmall ? 6.0 : 10.0);
     final buttonWidth = (availableWidth - (2 * buttonSpacing)) / 3;
-    final buttonHeight = isDesktop ? 60.0 : 56.0;
+    final buttonHeight = isDesktop ? 60.0 : (isVerySmall ? 45.0 : 56.0);
 
     // Number pad buttons arranged in rows
     return Column(
@@ -243,6 +250,9 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
   }
 
   Widget _buildNumberButton(String number, double width, double height) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isVerySmall = screenWidth <= 380;
+
     return SizedBox(
       width: width,
       height: height,
@@ -258,7 +268,7 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Theme.of(context).colorScheme.primary,
-                    fontSize: 28,
+                    fontSize: isVerySmall ? 22 : 28,
                   ),
             ),
           ),
@@ -273,6 +283,9 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
     required double width,
     required double height,
   }) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isVerySmall = screenWidth <= 380;
+
     return SizedBox(
       width: width,
       height: height,
@@ -285,7 +298,7 @@ class _PagerNumberDialogState extends State<PagerNumberDialog> {
           child: Center(
             child: Icon(
               icon,
-              size: 28,
+              size: isVerySmall ? 22 : 28,
               color: Colors.grey[700],
             ),
           ),
