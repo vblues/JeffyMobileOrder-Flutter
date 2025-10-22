@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/models/order_history_model.dart';
+import '../../data/models/sales_type_model.dart';
 import '../../data/repositories/order_history_repository_impl.dart';
 import '../bloc/order_history_bloc.dart';
 import '../bloc/order_history_event.dart';
@@ -621,6 +622,31 @@ class _OrderCardState extends State<_OrderCard> {
                       ),
                     ],
                   ),
+
+                  // Show pickup time for scheduled pickup orders
+                  if (widget.order.salesTypeSelection.salesType == SalesType.pickup &&
+                      widget.order.salesTypeSelection.schedule != null &&
+                      !widget.order.salesTypeSelection.schedule!.isASAP) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.schedule,
+                          size: 14,
+                          color: Colors.grey[600],
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Pick-up: ${widget.order.salesTypeSelection.schedule!.formattedDateTime}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
