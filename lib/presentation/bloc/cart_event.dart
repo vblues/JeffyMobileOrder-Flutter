@@ -50,3 +50,10 @@ class RefreshCart extends CartEvent {}
 
 /// Validate cart belongs to current store and clear if not
 class ValidateCartStore extends CartEvent {}
+
+/// Add multiple cart items directly (for reordering from history)
+class AddCartItems extends CartEvent {
+  final List<CartItem> items;
+
+  AddCartItems(this.items);
+}

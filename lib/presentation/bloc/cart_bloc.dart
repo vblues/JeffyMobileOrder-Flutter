@@ -17,6 +17,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     on<UpdateCartItemQuantity>(_onUpdateCartItemQuantity);
     on<ClearCart>(_onClearCart);
     on<RefreshCart>(_onRefreshCart);
+    on<AddCartItems>(_onAddCartItems);
   }
 
   /// Load cart from storage
@@ -178,7 +179,37 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     emit(CartLoaded(items: state.items, summary: summary));
   }
 
-  /// Validate cart belongs to current store
+  /// Add multiple cart items directly (for reordering from history)
+  Future<void> _onAddCartItems(
+      AddCartItems event, Emitter<CartState> emit) async {
+    try {
+      // Generate new IDs for all items to avoid conflicts
+      final itemsWithNewIds = event.items.map((item) {
+        return item.copyWith(
+          id: _uuid.v4(),
+          addedAt: DateTime.now(),
+        );
+      }).toList();
+
+      // Add to existing cart
+      final updatedItems = List<CartItem>.from(state.items)
+        ..addAll(itemsWithNewIds);
+
+      final summary = _calculateSummary(updatedItems);
+
+      // Save to storage
+      await _repository.saveCart(updatedItems);
+
+      emit(CartLoaded(items: updatedItems, summary: summary));
+    } catch (e) {
+      emit(CartError(
+        message: 'Failed to add cart items: $e',
+        items: state.items,
+        summary: state.summary,
+      ));
+    }
+  }
+
   /// Calculate cart summary
   CartSummary _calculateSummary(List<CartItem> items) {
     if (items.isEmpty) {

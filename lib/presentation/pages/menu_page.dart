@@ -268,6 +268,14 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
               });
             },
           ),
+          // Order history button
+          IconButton(
+            icon: const Icon(Icons.receipt_long),
+            tooltip: 'Order History',
+            onPressed: () {
+              context.push('/order-history');
+            },
+          ),
           // Cart button with badge
           BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {

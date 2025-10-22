@@ -8,6 +8,7 @@ import 'presentation/pages/menu_page.dart';
 import 'presentation/pages/cart_page.dart';
 import 'presentation/pages/sales_type_page.dart';
 import 'presentation/pages/payment_page.dart';
+import 'presentation/pages/order_history_page.dart';
 import 'presentation/bloc/cart_bloc.dart';
 import 'data/repositories/cart_repository_impl.dart';
 
@@ -71,6 +72,10 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/payment',
       builder: (context, state) => const PaymentPage(),
+    ),
+    GoRoute(
+      path: '/order-history',
+      builder: (context, state) => const OrderHistoryPage(),
     ),
     // TODO: Add table service route in Phase 2
     // GoRoute(

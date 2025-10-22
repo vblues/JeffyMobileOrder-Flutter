@@ -1,7 +1,12 @@
 import 'dart:html' as html;
+// ignore: avoid_web_libraries_in_flutter
 
 /// Helper class for browser notifications
 class NotificationHelper {
+  // Helper to log to browser console (works in release builds)
+  static void _log(String message) {
+    html.window.console.log('[NotificationHelper] $message');
+  }
   /// Check if notifications are supported
   static bool get isSupported {
     return html.Notification.supported;
@@ -16,17 +21,22 @@ class NotificationHelper {
   /// Request notification permission from user
   static Future<String> requestPermission() async {
     if (!isSupported) {
+      _log('Notifications not supported in this browser');
       return 'denied';
     }
 
     if (permission == 'granted') {
+      _log('Notification permission already granted');
       return 'granted';
     }
 
     try {
+      _log('Requesting notification permission...');
       final result = await html.Notification.requestPermission();
+      _log('Notification permission result: $result');
       return result;
     } catch (e) {
+      _log('Error requesting notification permission: $e');
       return 'denied';
     }
   }
@@ -40,31 +50,37 @@ class NotificationHelper {
     String? tag,
     bool requireInteraction = false,
   }) async {
+    _log('Attempting to show notification: $title');
+
     if (!isSupported) {
+      _log('Notifications not supported - aborting');
       return;
     }
 
     // Request permission if not already granted
     if (permission != 'granted') {
+      _log('Permission not granted, requesting...');
       final result = await requestPermission();
       if (result != 'granted') {
+        _log('Permission denied - cannot show notification');
         return;
       }
     }
 
     try {
-      final options = <String, dynamic>{
-        if (body != null) 'body': body,
-        if (icon != null) 'icon': icon,
-        if (badge != null) 'badge': badge,
-        if (tag != null) 'tag': tag,
-        'requireInteraction': requireInteraction,
-        'vibrate': [200, 100, 200], // Vibration pattern for mobile
-      };
-
-      // Create notification using JS interop
-      html.Notification(title, body: body, icon: icon, tag: tag);
+      _log('Creating notification with title: $title, body: $body');
+      // Create notification - dart:html Notification only supports basic named parameters
+      // Additional options like requireInteraction and vibrate are not supported in dart:html
+      // For full control, we would need to use package:js for direct JS interop
+      html.Notification(
+        title,
+        body: body,
+        icon: icon,
+        tag: tag,
+      );
+      _log('Notification created successfully');
     } catch (e) {
+      _log('Error creating notification: $e');
     }
   }
 

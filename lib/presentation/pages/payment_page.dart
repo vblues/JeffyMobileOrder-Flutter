@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -8,7 +9,9 @@ import '../../core/utils/notification_helper.dart';
 import '../../data/models/cart_item_model.dart';
 import '../../data/models/sales_type_model.dart';
 import '../../data/models/store_info_model.dart';
+import '../../data/models/order_history_model.dart';
 import '../../data/repositories/payment_repository_impl.dart';
+import '../../data/repositories/order_history_repository_impl.dart';
 import '../bloc/payment_bloc.dart';
 import '../bloc/cart_bloc.dart';
 import '../bloc/cart_event.dart';
@@ -45,6 +48,43 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
   void initState() {
     super.initState();
     _loadData();
+  }
+
+  Future<void> _saveOrderToHistory({
+    required String cloudOrderNumber,
+    String? orderNumber,
+    required int selectedPaymentMethodId,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Find the selected payment method by payCode (selectedPaymentMethodId is actually the payCode)
+      final paymentMethod = _paymentMethods.firstWhere(
+        (method) => method.payCode == selectedPaymentMethodId.toString(),
+        orElse: () => PayTypeInfo(id: 0, payName: 'Unknown', payCode: ''),
+      );
+
+      // Create order history item
+      final orderHistoryItem = OrderHistoryItem(
+        cloudOrderNumber: cloudOrderNumber,
+        orderNumber: orderNumber,
+        orderDate: DateTime.now(),
+        items: _cartItems,
+        salesTypeSelection: _salesTypeSelection!,
+        paymentMethod: PaymentMethodInfo(
+          id: paymentMethod.id,
+          name: paymentMethod.payName,
+          code: paymentMethod.payCode,
+        ),
+        totalPrice: _totalPrice,
+      );
+
+      // Save to history
+      final repository = OrderHistoryRepository(prefs);
+      await repository.saveOrder(orderHistoryItem);
+    } catch (e) {
+      // Ignore errors when saving order history - don't block order success flow
+    }
   }
 
   Future<void> _clearOrderState() async {
@@ -160,6 +200,17 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
                 }
 
                 if (state is PaymentSuccess) {
+                  html.window.console.log('[PaymentPage] PaymentSuccess state detected - order: ${state.orderNumber}, cloud: ${state.cloudOrderNumber}');
+
+                  // Save order to history before clearing state
+                  if (state.selectedPaymentMethod != null) {
+                    _saveOrderToHistory(
+                      cloudOrderNumber: state.cloudOrderNumber,
+                      orderNumber: state.orderNumber,
+                      selectedPaymentMethodId: state.selectedPaymentMethod!,
+                    );
+                  }
+
                   // Clear all order state (cart, sales type, payment)
                   _clearOrderState();
 
@@ -167,6 +218,8 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
                   final displayOrderNumber = state.orderNumber?.isNotEmpty == true
                       ? state.orderNumber!
                       : state.cloudOrderNumber;
+
+                  html.window.console.log('[PaymentPage] Triggering notification for order: $displayOrderNumber');
 
                   // Show browser notification
                   NotificationHelper.showOrderSuccessNotification(
