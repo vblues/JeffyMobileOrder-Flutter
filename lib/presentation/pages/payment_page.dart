@@ -136,6 +136,7 @@ class _PaymentPageViewState extends State<_PaymentPageView> {
         if (payTypeList != null) {
           _paymentMethods = payTypeList
               .map((e) => PayTypeInfo.fromJson(e as Map<String, dynamic>))
+              .where((method) => method.id != 60) // Filter out credit card payment (id 60)
               .toList();
         }
       }
