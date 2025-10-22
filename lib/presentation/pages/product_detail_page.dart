@@ -359,10 +359,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         ),
                       ),
 
-                    // Quantity selector
-                    _buildQuantitySelector(),
-                    const SizedBox(height: 16),
-
                     // Total price
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -374,7 +370,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               ),
                         ),
                         Text(
-                          '\$${(_totalPrice * _quantity).toStringAsFixed(2)}',
+                          '\$${_totalPrice.toStringAsFixed(2)}',
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
@@ -414,7 +410,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   context.read<CartBloc>().add(
                                         AddToCart(
                                           product: widget.product,
-                                          quantity: _quantity,
+                                          quantity: 1,
                                           selectedModifiers: _selectedModifiers,
                                           selectedCombos: _selectedCombos,
                                         ),
@@ -424,7 +420,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
                                       content: Text(
-                                        'Added $_quantity x ${widget.product.productNameEn} to cart',
+                                        'Added ${widget.product.productNameEn} to cart',
                                       ),
                                       duration: const Duration(seconds: 2),
                                       backgroundColor: Colors.green,
@@ -541,68 +537,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 ],
               ],
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuantitySelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        // Decrement button
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            onPressed: _quantity > 1
-                ? () {
-                    setState(() {
-                      _quantity--;
-                    });
-                  }
-                : null,
-            icon: const Icon(Icons.remove),
-            color: _quantity > 1 ? Colors.black87 : Colors.grey,
-          ),
-        ),
-        const SizedBox(width: 20),
-
-        // Quantity display
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey[100],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            _quantity.toString(),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ),
-        const SizedBox(width: 20),
-
-        // Increment button
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey[300]!),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            onPressed: _quantity < 99
-                ? () {
-                    setState(() {
-                      _quantity++;
-                    });
-                  }
-                : null,
-            icon: const Icon(Icons.add),
-            color: _quantity < 99 ? Colors.black87 : Colors.grey,
           ),
         ),
       ],

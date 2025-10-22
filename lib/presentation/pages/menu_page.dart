@@ -947,7 +947,28 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
             height: imageSize + detailsHeight, // Fixed total height
             child: InkWell(
               onTap: () {
-                // Get CartBloc from parent context
+                // If product has no modifiers or combos, add directly to cart
+                if (attributes.isEmpty && comboCategories.isEmpty) {
+                  context.read<CartBloc>().add(
+                    AddToCart(
+                      product: product,
+                      quantity: 1,
+                      selectedModifiers: {},
+                      selectedCombos: {},
+                    ),
+                  );
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Added ${product.productNameEn} to cart'),
+                      duration: const Duration(seconds: 2),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                  return;
+                }
+
+                // Otherwise, navigate to product details page
                 final cartBloc = context.read<CartBloc>();
 
                 Navigator.push(
@@ -1090,7 +1111,28 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                             height: buttonHeight,
                             child: ElevatedButton(
                               onPressed: () {
-                                // Get CartBloc from parent context
+                                // If product has no modifiers or combos, add directly to cart
+                                if (attributes.isEmpty && comboCategories.isEmpty) {
+                                  context.read<CartBloc>().add(
+                                    AddToCart(
+                                      product: product,
+                                      quantity: 1,
+                                      selectedModifiers: {},
+                                      selectedCombos: {},
+                                    ),
+                                  );
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Added ${product.productNameEn} to cart'),
+                                      duration: const Duration(seconds: 2),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                // Otherwise, navigate to product details page
                                 final cartBloc = context.read<CartBloc>();
 
                                 Navigator.push(

@@ -159,6 +159,13 @@ class _CartPageView extends StatelessWidget {
   Widget _buildCartItemCard(BuildContext context, CartItem cartItem) {
     final productPic = cartItem.product.secureProductPic;
 
+    // Check if product has modifiers or combos available (from menu)
+    final menuBloc = context.read<MenuBloc>();
+    final menuState = menuBloc.state;
+    final hasModifiersOrCombos = menuState is MenuLoaded &&
+        (menuState.getProductAttributes(cartItem.product.productId).isNotEmpty ||
+         menuState.getSelectableComboCategories(cartItem.product.productId).isNotEmpty);
+
     return Card(
       elevation: 2,
       child: Padding(
@@ -211,13 +218,14 @@ class _CartPageView extends StatelessWidget {
                     ],
                   ),
                 ),
-                // Edit button
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined, color: Colors.blue),
-                  onPressed: () {
-                    _navigateToEditItem(context, cartItem);
-                  },
-                ),
+                // Edit button - only show if product has modifiers/combos available
+                if (hasModifiersOrCombos)
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined, color: Colors.blue),
+                    onPressed: () {
+                      _navigateToEditItem(context, cartItem);
+                    },
+                  ),
                 // Delete button
                 IconButton(
                   icon: const Icon(Icons.delete_outline, color: Colors.red),
@@ -274,17 +282,50 @@ class _CartPageView extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     ...cartItem.comboItems.map((comboItem) {
+                      // Product name with price adjustment (without modifier count)
+                      final displayName = '${comboItem.productName}${comboItem.priceAdjustment != 0 ? " (${comboItem.priceAdjustment > 0 ? '+' : ''}\$${comboItem.priceAdjustment.toStringAsFixed(2)})" : ""}';
+
                       return Padding(
-                        padding: const EdgeInsets.only(bottom: 4),
-                        child: Row(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const SizedBox(width: 20),
-                            Expanded(
-                              child: Text(
-                                comboItem.toString(),
-                                style: const TextStyle(fontSize: 12),
-                              ),
+                            Row(
+                              children: [
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  child: Text(
+                                    displayName,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                            // Show modifiers for this combo item
+                            if (comboItem.modifiers.isNotEmpty) ...[
+                              const SizedBox(height: 4),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 20),
+                                child: Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  children: comboItem.modifiers.map((modifier) {
+                                    return Chip(
+                                      label: Text(
+                                        modifier.toString(),
+                                        style: const TextStyle(fontSize: 11),
+                                      ),
+                                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      padding: EdgeInsets.zero,
+                                      backgroundColor: Colors.grey[200],
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ],
                           ],
                         ),
                       );
