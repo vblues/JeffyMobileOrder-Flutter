@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/constants/storage_keys.dart';
+import '../../core/utils/page_metadata_helper.dart';
 import '../../data/datasources/store_remote_datasource.dart';
 import '../../data/repositories/store_repository_impl.dart';
 import '../bloc/store_bloc.dart';
@@ -76,6 +77,9 @@ class _StoreLocatorViewState extends State<_StoreLocatorView> {
         if (state is StoreLoaded && state.storeInfo != null) {
           appBarTitle = state.storeInfo!.storeNameEn;
           appBarColor = _parseColor(state.storeInfo!.brandColor);
+
+          // Update page metadata (title and description) based on store name
+          PageMetadataHelper.updateForStore(state.storeInfo!.storeNameEn);
         }
 
         return Scaffold(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../app.dart' as app;
 import '../../core/constants/storage_keys.dart';
+import '../../core/utils/page_metadata_helper.dart';
 import '../../data/datasources/menu_remote_datasource.dart';
 import '../../data/models/combo_model.dart';
 import '../../data/models/product_model.dart';
@@ -49,6 +50,9 @@ class MenuPage extends StatelessWidget {
           final storeName = _extractStoreName(storeInfoData);
           final brandColor = _extractBrandColor(storeInfoData);
 
+          // Update page metadata based on store name
+          PageMetadataHelper.updateForStore(storeName);
+
           return _MenuPageView(
             storeName: storeName,
             brandColor: brandColor,
@@ -82,6 +86,9 @@ class MenuPage extends StatelessWidget {
           // Extract store name and brand color
           final storeName = _extractStoreName(storeInfoData);
           final brandColor = _extractBrandColor(storeInfoData);
+
+          // Update page metadata based on store name
+          PageMetadataHelper.updateForStore(storeName);
 
           return BlocProvider(
             create: (context) => MenuBloc(
