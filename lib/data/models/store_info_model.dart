@@ -70,9 +70,6 @@ class StoreInfo {
   });
 
   factory StoreInfo.fromJson(Map<String, dynamic> json) {
-    print('[StoreInfo] Parsing from JSON...');
-    print('[StoreInfo] store_id value: ${json['store_id']}');
-    print('[StoreInfo] store_id type: ${json['store_id'].runtimeType}');
 
     // Handle both int and string for store_id
     int parsedStoreId;
@@ -83,18 +80,14 @@ class StoreInfo {
       try {
         parsedStoreId = int.parse(storeIdValue);
       } catch (e) {
-        print('[StoreInfo] ERROR: Cannot parse store_id "$storeIdValue" to int: $e');
         throw Exception('Invalid store_id value: $storeIdValue');
       }
     } else if (storeIdValue == null) {
-      print('[StoreInfo] ERROR: store_id is null');
       throw Exception('store_id is required but was null');
     } else {
-      print('[StoreInfo] ERROR: store_id has unexpected type: ${storeIdValue.runtimeType}');
       throw Exception('Invalid store_id type: ${storeIdValue.runtimeType}');
     }
 
-    print('[StoreInfo] Parsed store_id: $parsedStoreId');
 
     return StoreInfo(
       storeId: parsedStoreId,
@@ -196,24 +189,15 @@ class StoreInfo {
 
   /// Get sales type configuration from store_note
   SalesTypeConfig get salesTypeConfig {
-    print('[StoreInfo] Getting sales type config...');
     try {
       final note = storeNoteData;
-      print('[StoreInfo] store_note data: $note');
       final salesTypeData = note['SalesType'] as Map<String, dynamic>?;
-      print('[StoreInfo] SalesType data: $salesTypeData');
       if (salesTypeData != null) {
-        print('[StoreInfo] Parsing SalesTypeConfig from JSON...');
         final config = SalesTypeConfig.fromJson(salesTypeData);
-        print('[StoreInfo] SalesTypeConfig parsed successfully');
         return config;
       }
-      print('[StoreInfo] No SalesType data found, using default config');
       return SalesTypeConfig.defaultConfig();
     } catch (e, stackTrace) {
-      print('[StoreInfo] ERROR getting sales type config: $e');
-      print('[StoreInfo] Stack trace: $stackTrace');
-      print('[StoreInfo] Using default config');
       return SalesTypeConfig.defaultConfig();
     }
   }
@@ -323,7 +307,6 @@ class SalesTypeConfig {
   });
 
   factory SalesTypeConfig.fromJson(Map<String, dynamic> json) {
-    print('[SalesTypeConfig] Parsing from JSON: $json');
 
     SalesTypeDetail? dineIn;
     SalesTypeDetail? takeaway;
@@ -331,34 +314,25 @@ class SalesTypeConfig {
 
     try {
       if (json['DineIn'] != null) {
-        print('[SalesTypeConfig] Parsing DineIn...');
         dineIn = SalesTypeDetail.fromJson(json['DineIn'] as Map<String, dynamic>);
-        print('[SalesTypeConfig] DineIn parsed successfully: id=${dineIn.id}');
       }
     } catch (e) {
-      print('[SalesTypeConfig] ERROR parsing DineIn: $e');
       rethrow;
     }
 
     try {
       if (json['Takeaway'] != null) {
-        print('[SalesTypeConfig] Parsing Takeaway...');
         takeaway = SalesTypeDetail.fromJson(json['Takeaway'] as Map<String, dynamic>);
-        print('[SalesTypeConfig] Takeaway parsed successfully: id=${takeaway.id}');
       }
     } catch (e) {
-      print('[SalesTypeConfig] ERROR parsing Takeaway: $e');
       rethrow;
     }
 
     try {
       if (json['PickUp'] != null) {
-        print('[SalesTypeConfig] Parsing PickUp...');
         pickUp = SalesTypeDetail.fromJson(json['PickUp'] as Map<String, dynamic>);
-        print('[SalesTypeConfig] PickUp parsed successfully: id=${pickUp.id}');
       }
     } catch (e) {
-      print('[SalesTypeConfig] ERROR parsing PickUp: $e');
       rethrow;
     }
 
@@ -393,7 +367,6 @@ class SalesTypeDetail {
 
   factory SalesTypeDetail.fromJson(Map<String, dynamic> json) {
     // Diagnostic logging
-    print('[SalesTypeDetail] Parsing: $json');
 
     // Handle both int and string for id
     int parsedId;
@@ -404,15 +377,12 @@ class SalesTypeDetail {
       try {
         parsedId = int.parse(idValue);
       } catch (e) {
-        print('[SalesTypeDetail] ERROR: Cannot parse id "$idValue" to int: $e');
         rethrow;
       }
     } else {
-      print('[SalesTypeDetail] ERROR: id is null or unexpected type: ${idValue.runtimeType}');
       throw Exception('Invalid id value: $idValue');
     }
 
-    print('[SalesTypeDetail] Parsed id: $parsedId');
 
     return SalesTypeDetail(
       id: parsedId,

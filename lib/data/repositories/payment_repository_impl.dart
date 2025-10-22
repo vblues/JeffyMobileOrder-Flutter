@@ -84,25 +84,18 @@ class PaymentRepository {
 
   /// Get stored store info
   Future<StoreInfo> _getStoreInfo() async {
-    print('[PaymentRepository] Getting store info...');
     final prefs = await SharedPreferences.getInstance();
     final storeInfoJson = prefs.getString(StorageKeys.storeInfo);
     if (storeInfoJson == null) {
-      print('[PaymentRepository] ERROR: No stored store info found');
       throw Exception('No stored store info found');
     }
 
-    print('[PaymentRepository] Decoding store info JSON...');
     final storeInfoData = json.decode(storeInfoJson) as Map<String, dynamic>;
-    print('[PaymentRepository] Creating StoreInfo from JSON...');
 
     try {
       final storeInfo = StoreInfo.fromJson(storeInfoData);
-      print('[PaymentRepository] StoreInfo created successfully');
       return storeInfo;
     } catch (e, stackTrace) {
-      print('[PaymentRepository] ERROR creating StoreInfo: $e');
-      print('[PaymentRepository] Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -141,9 +134,6 @@ class PaymentRepository {
       // Make API call
       final url = '${credentials.apiDomain}/$endpoint';
 
-      print('[PaymentRepository] Sending request to: $url');
-      print('[PaymentRepository] Headers: $headers');
-      print('[PaymentRepository] Body: $bodyJson');
 
       final response = await _dio.post(
         url,
@@ -151,8 +141,6 @@ class PaymentRepository {
         options: Options(headers: headers),
       );
 
-      print('[PaymentRepository] Response status: ${response.statusCode}');
-      print('[PaymentRepository] Response data: ${response.data}');
 
       if (response.statusCode == 200 && response.data != null) {
         return response.data as Map<String, dynamic>;
@@ -174,10 +162,6 @@ class PaymentRepository {
     required int paymentMethodId,
     String? tableSessionId,
   }) async {
-    print('[PaymentRepository] Building order request...');
-    print('[PaymentRepository] Cart items count: ${cartItems.length}');
-    print('[PaymentRepository] Store ID: $storeId');
-    print('[PaymentRepository] Payment method ID: $paymentMethodId');
 
     // Separate combo and single items
     final List<Map<String, dynamic>> singleItems = [];
@@ -186,24 +170,18 @@ class PaymentRepository {
     double totalPrice = 0.0;
 
     for (final cartItem in cartItems) {
-      print('[PaymentRepository] Processing cart item: ${cartItem.product.productName}');
       final itemTotal = cartItem.totalPrice;
       totalPrice += itemTotal;
 
       if (cartItem.comboItems.isNotEmpty) {
         // Combo item
-        print('[PaymentRepository] Item is combo');
         comboItems.add(_buildComboItem(cartItem));
       } else {
         // Single item
-        print('[PaymentRepository] Item is single');
         singleItems.add(_buildSingleItem(cartItem));
       }
     }
 
-    print('[PaymentRepository] Single items count: ${singleItems.length}');
-    print('[PaymentRepository] Combo items count: ${comboItems.length}');
-    print('[PaymentRepository] Total price: \$${totalPrice.toStringAsFixed(2)}');
 
     // Get base URL for return URLs
     final baseUrl = Uri.base.origin;
@@ -226,7 +204,6 @@ class PaymentRepository {
       salesTypeConfig,
     );
 
-    print('[PaymentRepository] Sales type number: $salesTypeNum');
 
     // Build transaction object
     final transaction = {
@@ -255,7 +232,6 @@ class PaymentRepository {
       },
     };
 
-    print('[PaymentRepository] Final order request: ${json.encode(orderRequest)}');
 
     return orderRequest;
   }
@@ -284,17 +260,11 @@ class PaymentRepository {
 
   /// Build combo item object
   Map<String, dynamic> _buildComboItem(CartItem cartItem) {
-    print('[PaymentRepository] Building combo item...');
-    print('[PaymentRepository] Main product: ${cartItem.product.productSn}');
-    print('[PaymentRepository] Main modifiers count: ${cartItem.modifiers.length}');
-    print('[PaymentRepository] Combo items count: ${cartItem.comboItems.length}');
 
     final List<Map<String, dynamic>> subproducts = [];
 
     // Add combo sub-products
     for (final comboItem in cartItem.comboItems) {
-      print('[PaymentRepository] Combo sub-product SN: ${comboItem.productSn}');
-      print('[PaymentRepository] Combo sub-product modifiers: ${comboItem.modifiers.length}');
 
       // Build modifiers array for this sub-product
       final modifiers = comboItem.modifiers.map((modifier) {
@@ -312,7 +282,6 @@ class PaymentRepository {
       });
     }
 
-    print('[PaymentRepository] Total subproducts built: ${subproducts.length}');
 
     // Build main product modifiers
     final mainModifiers = cartItem.modifiers.map((modifier) {
@@ -323,7 +292,6 @@ class PaymentRepository {
       };
     }).toList();
 
-    print('[PaymentRepository] Main product modifiers built: ${mainModifiers.length}');
 
     return {
       'mainProduct': cartItem.product.productSn,  // Capital P - STRING per C# model
@@ -341,33 +309,22 @@ class PaymentRepository {
     OrderSchedule? schedule,
     SalesTypeConfig config,
   ) {
-    print('[PaymentRepository] Getting sales type number...');
-    print('[PaymentRepository] salesType: $salesType');
-    print('[PaymentRepository] schedule: ${schedule?.isASAP}');
-    print('[PaymentRepository] config.dineIn?.id: ${config.dineIn?.id}');
-    print('[PaymentRepository] config.takeaway?.id: ${config.takeaway?.id}');
-    print('[PaymentRepository] config.pickUp?.id: ${config.pickUp?.id}');
 
     int result;
     switch (salesType) {
       case SalesType.dineIn:
         result = config.dineIn?.id ?? 1; // Dine-in (default: 1)
-        print('[PaymentRepository] Using dineIn: $result');
         break;
       case SalesType.pickup:
         // Check if ASAP or scheduled
         if (schedule != null && schedule.isASAP) {
           result = config.takeaway?.id ?? 2; // Pickup ASAP / Takeaway (default: 2)
-          print('[PaymentRepository] Using takeaway (ASAP): $result');
         } else {
           result = config.pickUp?.id ?? 5; // Pickup scheduled (default: 5)
-          print('[PaymentRepository] Using pickUp (scheduled): $result');
         }
         break;
     }
 
-    print('[PaymentRepository] Final sales type number: $result');
-    print('[PaymentRepository] Sales type number type: ${result.runtimeType}');
 
     return result;
   }

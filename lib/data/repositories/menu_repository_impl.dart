@@ -240,7 +240,6 @@ class MenuRepository {
     } catch (e) {
       // Cache save failed (invalid JSON or encoding error)
       // Don't overwrite existing cache
-      print('Failed to cache menu: $e');
     }
   }
 
@@ -307,7 +306,6 @@ class MenuRepository {
     } catch (e) {
       // Cache save failed (invalid JSON or encoding error)
       // Don't overwrite existing cache
-      print('Failed to cache products: $e');
     }
   }
 
@@ -386,7 +384,6 @@ class MenuRepository {
     } catch (e) {
       // Cache save failed (invalid JSON, encoding error, or possibly too large)
       // Don't overwrite existing cache
-      print('Failed to cache product attributes: $e');
     }
   }
 
@@ -477,7 +474,6 @@ class MenuRepository {
     } catch (e) {
       // Cache save failed (invalid JSON or encoding error)
       // Don't overwrite existing cache
-      print('Failed to cache combo activities: $e');
     }
   }
 
@@ -569,7 +565,6 @@ class MenuRepository {
     } catch (e) {
       // Cache save failed (invalid JSON or encoding error)
       // Don't overwrite existing cache
-      print('Failed to cache combo products: $e');
     }
   }
 

@@ -18,26 +18,21 @@ class StoreRepository {
   /// This is the complete flow: locateStoreById → getStoreByDeviceNo
   Future<StoreInfoResponse> fetchStoreData(String storeId) async {
     try {
-      print('[StoreRepository] fetchStoreData starting for storeId: $storeId');
 
       // Step 1: Locate store to get API credentials
       final credentials = await remoteDataSource.locateStoreById(storeId);
-      print('[StoreRepository] Got credentials: ${credentials.deviceId}');
 
       // Cache credentials
       await _saveCredentials(credentials);
-      print('[StoreRepository] Credentials saved');
 
       // Step 2: Get store info using credentials
       final storeInfo = await remoteDataSource.getStoreByDeviceNo(
         credentials: credentials,
         deviceNo: credentials.deviceId,
       );
-      print('[StoreRepository] Got store info: ${storeInfo.storeInfos.length} stores');
 
       // Cache store info
       await _saveStoreInfo(storeInfo);
-      print('[StoreRepository] Store info saved');
 
       // Cache store ID
       if (storeInfo.storeInfos.isNotEmpty) {
@@ -45,13 +40,10 @@ class StoreRepository {
           StorageKeys.storeId,
           storeInfo.storeInfos.first.storeId.toString(),
         );
-        print('[StoreRepository] Store ID saved: ${storeInfo.storeInfos.first.storeId}');
       }
 
-      print('[StoreRepository] fetchStoreData complete');
       return storeInfo;
     } catch (e) {
-      print('[StoreRepository] fetchStoreData error: $e');
       rethrow;
     }
   }
@@ -115,7 +107,6 @@ class StoreRepository {
           }
         }
       } catch (e) {
-        print('[StoreRepository] Error parsing PayType from store_note: $e');
       }
 
       final jsonData = {

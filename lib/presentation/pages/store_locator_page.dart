@@ -178,14 +178,11 @@ class _StoreLocatorViewState extends State<_StoreLocatorView> {
           }
 
           if (state is StoreLoaded) {
-            print('[StoreLocator] StoreLoaded state received');
             // Automatically navigate to menu page when store data is loaded
             // Add small delay to ensure SharedPreferences is persisted
             WidgetsBinding.instance.addPostFrameCallback((_) async {
-              print('[StoreLocator] Delaying for SharedPreferences persist');
               // Ensure preferences are committed before navigation
               await Future.delayed(const Duration(milliseconds: 100));
-              print('[StoreLocator] Navigating to /menu');
               if (context.mounted) {
                 context.go('/menu');
               }

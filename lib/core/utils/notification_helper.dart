@@ -27,7 +27,6 @@ class NotificationHelper {
       final result = await html.Notification.requestPermission();
       return result;
     } catch (e) {
-      print('[NotificationHelper] Error requesting permission: $e');
       return 'denied';
     }
   }
@@ -42,7 +41,6 @@ class NotificationHelper {
     bool requireInteraction = false,
   }) async {
     if (!isSupported) {
-      print('[NotificationHelper] Notifications not supported');
       return;
     }
 
@@ -50,7 +48,6 @@ class NotificationHelper {
     if (permission != 'granted') {
       final result = await requestPermission();
       if (result != 'granted') {
-        print('[NotificationHelper] Permission not granted: $result');
         return;
       }
     }
@@ -67,9 +64,7 @@ class NotificationHelper {
 
       // Create notification using JS interop
       html.Notification(title, body: body, icon: icon, tag: tag);
-      print('[NotificationHelper] Notification shown: $title');
     } catch (e) {
-      print('[NotificationHelper] Error showing notification: $e');
     }
   }
 

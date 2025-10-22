@@ -38,11 +38,8 @@ class MenuPage extends StatelessWidget {
         final credentialsJson = snapshot.data!.getString(StorageKeys.storeCredentials);
         final storeInfoJson = snapshot.data!.getString(StorageKeys.storeInfo);
 
-        print('[MenuPage] credentialsJson: ${credentialsJson != null ? "EXISTS" : "NULL"}');
-        print('[MenuPage] storeInfoJson: ${storeInfoJson != null ? "EXISTS" : "NULL"}');
 
         if (credentialsJson == null || storeInfoJson == null) {
-          print('[MenuPage] Missing data - showing QR scan message');
           return Scaffold(
             appBar: AppBar(
               title: const Text('Menu'),

@@ -76,7 +76,6 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
       } catch (e) {
         // Continue without attributes if fetch fails
         // This is non-critical, so don't block menu loading
-        print('Warning: Failed to load product attributes: $e');
       }
 
       // Fetch combo activities
@@ -96,7 +95,6 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
         }
       } catch (e) {
         // Continue without combo activities if fetch fails
-        print('Warning: Failed to load combo activities: $e');
       }
 
       // Fetch combo products
@@ -116,7 +114,6 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
         }
       } catch (e) {
         // Continue without combo products if fetch fails
-        print('Warning: Failed to load combo products: $e');
       }
 
       emit(MenuLoaded(
