@@ -378,19 +378,12 @@ class _CartPageView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // Increment button
+                      // Increment button - opens product page to add more
                       IconButton(
                         icon: const Icon(Icons.add, size: 18),
-                        onPressed: cartItem.quantity < 99
-                            ? () {
-                                context.read<CartBloc>().add(
-                                      UpdateCartItemQuantity(
-                                        cartItemId: cartItem.id,
-                                        newQuantity: cartItem.quantity + 1,
-                                      ),
-                                    );
-                              }
-                            : null,
+                        onPressed: () {
+                          _navigateToAddMoreItem(context, cartItem);
+                        },
                         padding: const EdgeInsets.all(8),
                         constraints: const BoxConstraints(
                           minWidth: 32,
@@ -618,6 +611,7 @@ class _CartPageView extends StatelessWidget {
               comboProductsMap: comboProductsMap,
               productAttributesMap: productAttributesMap,
               cartItemToEdit: cartItem,
+              isExplicitEdit: true, // Explicit edit from cart page
             ),
           ),
         ),
@@ -627,6 +621,68 @@ class _CartPageView extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please visit the menu page first to enable editing'),
+          action: SnackBarAction(
+            label: 'Go to Menu',
+            onPressed: () => context.go('/menu'),
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  void _navigateToAddMoreItem(BuildContext context, CartItem cartItem) {
+    // Get MenuBloc from global context
+    try {
+      final menuBloc = context.read<MenuBloc>();
+      final menuState = menuBloc.state;
+
+      if (menuState is! MenuLoaded) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Menu is still loading. Please try again.'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+        return;
+      }
+
+      // Get product attributes and combo categories
+      final attributes = menuState.getProductAttributes(cartItem.product.productId);
+      final comboCategories = menuState.getSelectableComboCategories(cartItem.product.productId);
+      final comboProductsMap = menuState.comboProductsMap;
+      final productAttributesMap = menuState.productAttributes;
+
+      // Get CartBloc from context
+      final cartBloc = context.read<CartBloc>();
+
+      // Navigate to ProductDetailPage in "add more" mode
+      // This uses smart duplicate detection - if unchanged, will merge; if changed, creates new item
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: cartBloc),
+              BlocProvider.value(value: menuBloc),
+            ],
+            child: ProductDetailPage(
+              product: cartItem.product,
+              attributes: attributes,
+              comboCategories: comboCategories,
+              comboProductsMap: comboProductsMap,
+              productAttributesMap: productAttributesMap,
+              cartItemToEdit: cartItem, // Pass item for pre-selection
+              isExplicitEdit: false, // Use "Add" flow with smart duplicate detection
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      // MenuBloc not available - guide user to menu page
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please visit the menu page first to enable this feature'),
           action: SnackBarAction(
             label: 'Go to Menu',
             onPressed: () => context.go('/menu'),

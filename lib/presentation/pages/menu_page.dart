@@ -9,6 +9,7 @@ import '../../data/datasources/menu_remote_datasource.dart';
 import '../../data/models/combo_model.dart';
 import '../../data/models/product_model.dart';
 import '../../data/models/product_attribute_model.dart';
+import '../../data/models/cart_item_model.dart';
 import '../../data/models/store_credentials_model.dart';
 import '../../data/repositories/menu_repository_impl.dart';
 import '../../data/repositories/cart_repository_impl.dart';
@@ -947,9 +948,12 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
             height: imageSize + detailsHeight, // Fixed total height
             child: InkWell(
               onTap: () {
+                final cartBloc = context.read<CartBloc>();
+
                 // If product has no modifiers or combos, add directly to cart
+                // (AddToCart handler will auto-merge if identical item exists)
                 if (attributes.isEmpty && comboCategories.isEmpty) {
-                  context.read<CartBloc>().add(
+                  cartBloc.add(
                     AddToCart(
                       product: product,
                       quantity: 1,
@@ -968,9 +972,22 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                   return;
                 }
 
-                // Otherwise, navigate to product details page
-                final cartBloc = context.read<CartBloc>();
+                // For products with customizations, check if a matching item with default selections exists
+                final defaultModifiers = _buildDefaultModifiers(attributes);
+                final defaultCombos = _buildDefaultCombos(comboCategories, comboProductsMap);
 
+                // Convert to CartModifiers and CartComboItems for comparison
+                final cartModifiers = _convertToCartModifiers(defaultModifiers);
+                final cartComboItems = _convertToCartComboItems(defaultCombos);
+
+                // Check if matching item exists in cart
+                final matchingCartItem = cartBloc.findMatchingCartItem(
+                  product.productId,
+                  cartModifiers,
+                  cartComboItems,
+                );
+
+                // Navigate to product details page
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -982,6 +999,7 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                         comboCategories: comboCategories,
                         comboProductsMap: comboProductsMap,
                         productAttributesMap: productAttributesMap,
+                        cartItemToEdit: matchingCartItem, // Pass existing item if found
                       ),
                     ),
                   ),
@@ -1111,9 +1129,12 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                             height: buttonHeight,
                             child: ElevatedButton(
                               onPressed: () {
+                                final cartBloc = context.read<CartBloc>();
+
                                 // If product has no modifiers or combos, add directly to cart
+                                // (AddToCart handler will auto-merge if identical item exists)
                                 if (attributes.isEmpty && comboCategories.isEmpty) {
-                                  context.read<CartBloc>().add(
+                                  cartBloc.add(
                                     AddToCart(
                                       product: product,
                                       quantity: 1,
@@ -1132,9 +1153,22 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                                   return;
                                 }
 
-                                // Otherwise, navigate to product details page
-                                final cartBloc = context.read<CartBloc>();
+                                // For products with customizations, check if a matching item with default selections exists
+                                final defaultModifiers = _buildDefaultModifiers(attributes);
+                                final defaultCombos = _buildDefaultCombos(comboCategories, comboProductsMap);
 
+                                // Convert to CartModifiers and CartComboItems for comparison
+                                final cartModifiers = _convertToCartModifiers(defaultModifiers);
+                                final cartComboItems = _convertToCartComboItems(defaultCombos);
+
+                                // Check if matching item exists in cart
+                                final matchingCartItem = cartBloc.findMatchingCartItem(
+                                  product.productId,
+                                  cartModifiers,
+                                  cartComboItems,
+                                );
+
+                                // Navigate to product details page
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -1146,6 +1180,7 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
                                         comboCategories: comboCategories,
                                         comboProductsMap: comboProductsMap,
                                         productAttributesMap: productAttributesMap,
+                                        cartItemToEdit: matchingCartItem, // Pass existing item if found
                                       ),
                                     ),
                                   ),
@@ -1182,6 +1217,87 @@ class _MenuPageViewState extends State<_MenuPageView> with RouteAware {
     );
       },
     );
+  }
+
+  /// Build default modifier selections based on default_choose flag
+  Map<int, List<AttributeValue>> _buildDefaultModifiers(List<ProductAttribute> attributes) {
+    final Map<int, List<AttributeValue>> defaultModifiers = {};
+
+    for (final attribute in attributes) {
+      final defaultValues = attribute.values
+          .where((val) => val.isDefault)
+          .toList();
+
+      if (defaultValues.isNotEmpty) {
+        defaultModifiers[attribute.attId] = defaultValues;
+      } else {
+        defaultModifiers[attribute.attId] = [];
+      }
+    }
+
+    return defaultModifiers;
+  }
+
+  /// Build default combo selections based on default_id
+  Map<String, List<SelectedComboItem>> _buildDefaultCombos(
+    List<ComboCategory> comboCategories,
+    Map<int, Product> comboProductsMap,
+  ) {
+    final Map<String, List<SelectedComboItem>> defaultCombos = {};
+
+    for (final category in comboCategories) {
+      defaultCombos[category.typeNameSn] = [];
+
+      // Add default products
+      for (final defaultId in category.defaultIds) {
+        final comboProduct = comboProductsMap[defaultId];
+        if (comboProduct != null) {
+          final priceAdjustment = category.getPriceAdjustment(defaultId);
+          defaultCombos[category.typeNameSn]!.add(
+            SelectedComboItem(
+              categoryTypeNameSn: int.tryParse(category.typeNameSn) ?? 0,
+              categoryName: category.typeNameEn,
+              productId: defaultId,
+              productSn: comboProduct.productSn,
+              productName: comboProduct.productNameEn,
+              priceAdjustment: priceAdjustment,
+            ),
+          );
+        }
+      }
+    }
+
+    return defaultCombos;
+  }
+
+  /// Convert AttributeValue selections to CartModifiers
+  List<CartModifier> _convertToCartModifiers(Map<int, List<AttributeValue>> modifiers) {
+    final List<CartModifier> cartModifiers = [];
+
+    modifiers.forEach((attId, values) {
+      for (final value in values) {
+        cartModifiers.add(CartModifier.fromAttributeValue(
+          attId,
+          'Modifier $attId',
+          value,
+        ));
+      }
+    });
+
+    return cartModifiers;
+  }
+
+  /// Convert SelectedComboItems to CartComboItems
+  List<CartComboItem> _convertToCartComboItems(Map<String, List<SelectedComboItem>> combos) {
+    final List<CartComboItem> cartComboItems = [];
+
+    combos.forEach((category, items) {
+      for (final item in items) {
+        cartComboItems.add(CartComboItem.fromSelectedComboItem(item));
+      }
+    });
+
+    return cartComboItems;
   }
 
   /// Parse hex color string to Flutter Color

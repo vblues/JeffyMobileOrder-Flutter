@@ -67,17 +67,42 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         }
       });
 
-      // Create new cart item
-      final cartItem = CartItem(
-        id: _uuid.v4(),
-        product: event.product,
-        quantity: event.quantity,
-        modifiers: cartModifiers,
-        comboItems: cartComboItems,
+      // Check if an identical item already exists in cart
+      final matchingItem = findMatchingCartItem(
+        event.product.productId,
+        cartModifiers,
+        cartComboItems,
       );
 
-      // Add to cart
-      final updatedItems = List<CartItem>.from(state.items)..add(cartItem);
+      final List<CartItem> updatedItems;
+      final CartItem resultItem;
+
+      if (matchingItem != null) {
+        // Increment quantity of existing item
+        final incrementedItem = matchingItem.copyWith(
+          quantity: matchingItem.quantity + event.quantity,
+        );
+
+        updatedItems = state.items.map((item) {
+          if (item.id == matchingItem.id) {
+            return incrementedItem;
+          }
+          return item;
+        }).toList();
+
+        resultItem = incrementedItem;
+      } else {
+        // Create new cart item
+        resultItem = CartItem(
+          id: _uuid.v4(),
+          product: event.product,
+          quantity: event.quantity,
+          modifiers: cartModifiers,
+          comboItems: cartComboItems,
+        );
+
+        updatedItems = List<CartItem>.from(state.items)..add(resultItem);
+      }
 
       final summary = _calculateSummary(updatedItems);
 
@@ -85,7 +110,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
       await _repository.saveCart(updatedItems);
 
       emit(CartItemAdded(
-        addedItem: cartItem,
+        addedItem: resultItem,
         items: updatedItems,
         summary: summary,
       ));
@@ -275,6 +300,73 @@ class CartBloc extends Bloc<CartEvent, CartState> {
         summary: state.summary,
       ));
     }
+  }
+
+  /// Find existing cart item that matches the product and customizations
+  /// Returns the matching CartItem if found, null otherwise
+  CartItem? findMatchingCartItem(
+    int productId,
+    List<CartModifier> modifiers,
+    List<CartComboItem> comboItems,
+  ) {
+    for (final item in state.items) {
+      // Check if product ID matches
+      if (item.product.productId != productId) continue;
+
+      // Check if modifiers match (same count and same values)
+      if (!_modifiersMatch(item.modifiers, modifiers)) continue;
+
+      // Check if combo items match (same count and same values)
+      if (!_comboItemsMatch(item.comboItems, comboItems)) continue;
+
+      // Found a match!
+      return item;
+    }
+    return null;
+  }
+
+  /// Check if two lists of modifiers are identical
+  bool _modifiersMatch(List<CartModifier> a, List<CartModifier> b) {
+    if (a.length != b.length) return false;
+
+    // Create sorted lists of modifier identifiers for comparison
+    final aIds = a.map((m) => '${m.attId}_${m.attValId}').toList()..sort();
+    final bIds = b.map((m) => '${m.attId}_${m.attValId}').toList()..sort();
+
+    for (int i = 0; i < aIds.length; i++) {
+      if (aIds[i] != bIds[i]) return false;
+    }
+    return true;
+  }
+
+  /// Check if two lists of combo items are identical
+  bool _comboItemsMatch(List<CartComboItem> a, List<CartComboItem> b) {
+    if (a.length != b.length) return false;
+
+    // Create sorted lists for comparison
+    final aSorted = List<CartComboItem>.from(a)
+      ..sort((x, y) => '${x.categoryTypeNameSn}_${x.productId}'
+          .compareTo('${y.categoryTypeNameSn}_${y.productId}'));
+    final bSorted = List<CartComboItem>.from(b)
+      ..sort((x, y) => '${x.categoryTypeNameSn}_${x.productId}'
+          .compareTo('${y.categoryTypeNameSn}_${y.productId}'));
+
+    for (int i = 0; i < aSorted.length; i++) {
+      final aItem = aSorted[i];
+      final bItem = bSorted[i];
+
+      // Check category and product match
+      if (aItem.categoryTypeNameSn != bItem.categoryTypeNameSn ||
+          aItem.productId != bItem.productId) {
+        return false;
+      }
+
+      // Check modifiers for this combo item match
+      if (!_modifiersMatch(aItem.modifiers, bItem.modifiers)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /// Calculate cart summary

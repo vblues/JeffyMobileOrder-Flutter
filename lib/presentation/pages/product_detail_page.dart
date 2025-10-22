@@ -17,6 +17,7 @@ class ProductDetailPage extends StatefulWidget {
   final Map<int, Product> comboProductsMap;
   final Map<int, List<ProductAttribute>> productAttributesMap;
   final CartItem? cartItemToEdit; // For edit mode
+  final bool isExplicitEdit; // True when editing from cart, false when smart-suggested from menu
 
   const ProductDetailPage({
     super.key,
@@ -26,6 +27,7 @@ class ProductDetailPage extends StatefulWidget {
     this.comboProductsMap = const {},
     this.productAttributesMap = const {},
     this.cartItemToEdit,
+    this.isExplicitEdit = false, // Default to false for backward compatibility
   });
 
   @override
@@ -42,8 +44,31 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   // Track selected combos: categoryTypeNameSn -> List<SelectedComboItem>
   final Map<String, List<SelectedComboItem>> _selectedCombos = {};
 
+  // Track original selections for change detection (only in edit mode)
+  Map<int, List<AttributeValue>>? _originalModifiers;
+  Map<String, List<SelectedComboItem>>? _originalCombos;
+
   /// Check if we're in edit mode
   bool get isEditMode => widget.cartItemToEdit != null;
+
+  /// Check if current selections differ from original (only relevant in edit mode)
+  bool get hasChanges {
+    if (!isEditMode || _originalModifiers == null || _originalCombos == null) {
+      return false;
+    }
+
+    // Compare modifiers
+    if (!_modifiersMatch(_selectedModifiers, _originalModifiers!)) {
+      return true;
+    }
+
+    // Compare combos
+    if (!_combosMatch(_selectedCombos, _originalCombos!)) {
+      return true;
+    }
+
+    return false;
+  }
 
   @override
   void initState() {
@@ -164,6 +189,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
       _selectedCombos[category.typeNameSn] = matchingCombos;
     }
 
+    // Store original selections for change detection
+    _originalModifiers = _deepCopyModifiers(_selectedModifiers);
+    _originalCombos = _deepCopyCombos(_selectedCombos);
+
     _recalculatePrice();
   }
 
@@ -188,6 +217,104 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     setState(() {
       _totalPrice = price;
     });
+  }
+
+  /// Deep copy modifiers map for change detection
+  Map<int, List<AttributeValue>> _deepCopyModifiers(Map<int, List<AttributeValue>> original) {
+    final copy = <int, List<AttributeValue>>{};
+    original.forEach((key, value) {
+      copy[key] = List<AttributeValue>.from(value);
+    });
+    return copy;
+  }
+
+  /// Deep copy combos map for change detection
+  Map<String, List<SelectedComboItem>> _deepCopyCombos(Map<String, List<SelectedComboItem>> original) {
+    final copy = <String, List<SelectedComboItem>>{};
+    original.forEach((key, value) {
+      copy[key] = List<SelectedComboItem>.from(value);
+    });
+    return copy;
+  }
+
+  /// Compare two modifier maps for equality
+  bool _modifiersMatch(Map<int, List<AttributeValue>> a, Map<int, List<AttributeValue>> b) {
+    if (a.length != b.length) return false;
+
+    for (final entry in a.entries) {
+      final bList = b[entry.key];
+      if (bList == null) return false;
+
+      final aIds = entry.value.map((v) => v.attValId).toList()..sort();
+      final bIds = bList.map((v) => v.attValId).toList()..sort();
+
+      if (aIds.length != bIds.length) return false;
+      for (int i = 0; i < aIds.length; i++) {
+        if (aIds[i] != bIds[i]) return false;
+      }
+    }
+    return true;
+  }
+
+  /// Compare two combo maps for equality
+  bool _combosMatch(Map<String, List<SelectedComboItem>> a, Map<String, List<SelectedComboItem>> b) {
+    if (a.length != b.length) return false;
+
+    for (final entry in a.entries) {
+      final bList = b[entry.key];
+      if (bList == null) return false;
+
+      if (entry.value.length != bList.length) return false;
+
+      // Sort both lists by category and product ID for comparison
+      final aItems = List<SelectedComboItem>.from(entry.value)
+        ..sort((x, y) => '${x.categoryTypeNameSn}_${x.productId}'
+            .compareTo('${y.categoryTypeNameSn}_${y.productId}'));
+      final bItems = List<SelectedComboItem>.from(bList)
+        ..sort((x, y) => '${x.categoryTypeNameSn}_${x.productId}'
+            .compareTo('${y.categoryTypeNameSn}_${y.productId}'));
+
+      for (int i = 0; i < aItems.length; i++) {
+        final aItem = aItems[i];
+        final bItem = bItems[i];
+
+        if (aItem.categoryTypeNameSn != bItem.categoryTypeNameSn ||
+            aItem.productId != bItem.productId) {
+          return false;
+        }
+
+        // Also compare combo item modifiers
+        final aModIds = aItem.modifiers.map((m) => '${m.attId}_${m.attValId}').toList()..sort();
+        final bModIds = bItem.modifiers.map((m) => '${m.attId}_${m.attValId}').toList()..sort();
+
+        if (aModIds.length != bModIds.length) return false;
+        for (int j = 0; j < aModIds.length; j++) {
+          if (aModIds[j] != bModIds[j]) return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  /// Get button text based on edit mode and changes
+  String _getButtonText() {
+    if (widget.isExplicitEdit) {
+      // Explicit edit from cart page
+      return 'Update Item';
+    }
+
+    if (!isEditMode) {
+      // Normal add from menu
+      return 'Add to Cart';
+    }
+
+    if (hasChanges) {
+      // Smart suggestion from menu but user changed selections
+      return 'Add as New Item';
+    }
+
+    // Smart suggestion from menu with no changes
+    return 'Add to Cart (+1)';
   }
 
   /// Check if all mandatory modifiers and combos are selected
@@ -387,46 +514,46 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       child: ElevatedButton(
                         onPressed: _areAllMandatoryModifiersSelected()
                             ? () {
-                                if (isEditMode) {
-                                  // Update existing cart item
-                                  context.read<CartBloc>().add(
-                                        UpdateCartItem(
-                                          cartItemId: widget.cartItemToEdit!.id,
-                                          selectedModifiers: _selectedModifiers,
-                                          selectedCombos: _selectedCombos,
-                                        ),
-                                      );
+                                final String actionMessage;
 
-                                  // Show success message
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Item updated successfully'),
-                                      duration: Duration(seconds: 2),
-                                      backgroundColor: Colors.green,
+                                if (widget.isExplicitEdit) {
+                                  // Explicit edit from cart - always update that specific item
+                                  context.read<CartBloc>().add(
+                                    UpdateCartItem(
+                                      cartItemId: widget.cartItemToEdit!.id,
+                                      selectedModifiers: _selectedModifiers,
+                                      selectedCombos: _selectedCombos,
                                     ),
                                   );
+                                  actionMessage = 'Item updated successfully';
                                 } else {
-                                  // Add to cart
-                                  context.read<CartBloc>().add(
-                                        AddToCart(
-                                          product: widget.product,
-                                          quantity: 1,
-                                          selectedModifiers: _selectedModifiers,
-                                          selectedCombos: _selectedCombos,
-                                        ),
-                                      );
+                                  // Smart add from menu - use AddToCart for auto-merge behavior
+                                  if (isEditMode && !hasChanges) {
+                                    actionMessage = 'Added to existing item in cart';
+                                  } else if (isEditMode && hasChanges) {
+                                    actionMessage = 'Added as new item to cart';
+                                  } else {
+                                    actionMessage = 'Added ${widget.product.productNameEn} to cart';
+                                  }
 
-                                  // Show success message
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Added ${widget.product.productNameEn} to cart',
-                                      ),
-                                      duration: const Duration(seconds: 2),
-                                      backgroundColor: Colors.green,
+                                  context.read<CartBloc>().add(
+                                    AddToCart(
+                                      product: widget.product,
+                                      quantity: 1,
+                                      selectedModifiers: _selectedModifiers,
+                                      selectedCombos: _selectedCombos,
                                     ),
                                   );
                                 }
+
+                                // Show success message
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(actionMessage),
+                                    duration: const Duration(seconds: 2),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
 
                                 // Navigate back
                                 context.pop();
@@ -440,7 +567,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         ),
                         child: Text(
                           _areAllMandatoryModifiersSelected()
-                              ? (isEditMode ? 'Update Item' : 'Add to Cart')
+                              ? _getButtonText()
                               : 'Complete Selections Above',
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
